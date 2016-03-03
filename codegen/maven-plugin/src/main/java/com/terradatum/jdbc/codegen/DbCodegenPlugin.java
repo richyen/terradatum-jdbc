@@ -52,7 +52,7 @@ public class DbCodegenPlugin extends AbstractMojo {
   /**
    * Location of the output directory
    */
-  @Parameter(alias = "output-directory", property = "com.terradatum.db.codegen.output", defaultValue = "${project.build.directory}/generated-sources/db-codegen")
+  @Parameter(alias = "output-directory", property = "com.terradatum.db.codegen.output", defaultValue = "${project.build.directory}/generated-sources/jdbc-codegen")
   private File outputDirectory;
 
   /**

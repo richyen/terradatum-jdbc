@@ -36,37 +36,37 @@ import java.util.ArrayList;
  * @date <created>
  */
 public class <typeInfo.className> extends <typeInfo:arrayType()> {
-	public static final String SQL_TYPE_NAME = "<typeInfo.typeName>";
+  public static final String SQL_TYPE_NAME = "<typeInfo.typeName>";
     private final ArrayList\<<typeInfo:typeParameter()>\> delegate = new ArrayList\<>();
 
-	/**
-	 * Required default constructor.
-	 */
-	@SuppressWarnings("unused")
-	public <typeInfo.className>() {
-	}
+  /**
+   * Required default constructor.
+   */
+  @SuppressWarnings("unused")
+  public <typeInfo.className>() {
+  }
 
-	@Override
-	protected ArrayList\<<typeInfo:typeParameter()>\> delegate() {
-		return delegate;
-	}
+  @Override
+  protected ArrayList\<<typeInfo:typeParameter()>\> delegate() {
+    return delegate;
+  }
 
-	@Override
-	public String getSQLTypeName() {
-		return SQL_TYPE_NAME;
-	}
+  @Override
+  public String getSQLTypeName() {
+    return SQL_TYPE_NAME;
+  }
 
-	@Override
-	public <typeInfo.className> setArray(Array array) throws SQLException, InvocationTargetException,
-			NoSuchMethodException, IllegalAccessException, NoSuchFieldException {
-	    super.setArray(array);
-	    return this;
-	}
+  @Override
+  public <typeInfo.className> setArray(Array array) throws SQLException, InvocationTargetException,
+      NoSuchMethodException, IllegalAccessException, NoSuchFieldException {
+      super.setArray(array);
+      return this;
+  }
 
-	@Override
-	public <typeInfo.className> setElements(<typeInfo:typeParameter()>[] elements) throws SQLException {
-	    super.setElements(elements);
-	    return this;
-	}
+  @Override
+  public <typeInfo.className> setElements(<typeInfo:typeParameter()>[] elements) throws SQLException {
+      super.setElements(elements);
+      return this;
+  }
 }
 >>

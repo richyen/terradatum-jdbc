@@ -4,10 +4,8 @@ import com.edb.jdbc4.Jdbc4Connection;
 import oracle.jdbc.driver.OracleConnection;
 import org.junit.Before;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -24,7 +22,8 @@ public class AbstractAdapterTest {
   @Before
   public void setUp() throws ClassNotFoundException, SQLException, IOException {
     Properties p = new Properties();
-    p.load(new FileReader(new File("jdbc.properties")));
+    InputStream is = ClassLoader.getSystemResourceAsStream("jdbc.properties");
+    p.load(is);
     Class.forName(p.getProperty("oracle.class-name"));
     Class.forName(p.getProperty("edb.class-name"));
     setOracleConnection((OracleConnection) DriverManager.getConnection(p.getProperty("oracle.connection-url"),

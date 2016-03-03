@@ -58,13 +58,13 @@ public class Generator {
         searchPath = new ArrayList<>(Arrays.asList(searchPathArray));
       }
 
-      String outputDirectoryPath = projectBaseDir + "/target/generated-test-sources/db-codegen";
+      String outputDirectoryPath = projectBaseDir + "/target/generated-test-sources/jdbc-codegen";
       String templatesDirectoryPath = projectBaseDir + "/src/main/resources/templates";
       File objectTemplateFile = new File(templatesDirectoryPath + "/obj.stg");
       File tableTemplateFile = new File(templatesDirectoryPath + "/tbl.stg");
       File outputDirectory = new File(outputDirectoryPath);
-      Generator generator = new Generator();
-      generator.execute(new Configuration(p.getProperty("edb.connection-url"), p.getProperty("edb.username"), p.getProperty("edb.password"),
+
+      Generator.execute(new Configuration(p.getProperty("edb.connection-url"), p.getProperty("edb.username"), p.getProperty("edb.password"),
           packageName, outputDirectory, objectTemplateFile, tableTemplateFile, searchPath, null,
           "(?i:\n" + "metrics\\.agent_contact_info_obj|\n" + "metrics\\.agent_contact_info_tbl|\n"
               + "terradatum\\.mls_agent_id_obj|\n" + "terradatum\\.mls_agent_id_tbl|\n" + "terradatum\\.mls_area_type_obj|\n"

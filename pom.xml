@@ -9,7 +9,7 @@
     <version>4.9-SNAPSHOT</version>
   </parent>
   <artifactId>terradatum-jdbc-parent</artifactId>
-  <version>4.9-SNAPSHOT</version>
+  <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
     <module>jdbc</module>
@@ -17,6 +17,7 @@
     <module>codegen/maven-plugin</module>
   </modules>
   <properties>
+    <terradatum-jdbc.version>1.0-SNAPSHOT</terradatum-jdbc.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
@@ -80,12 +81,12 @@
       <dependency>
         <groupId>com.terradatum</groupId>
         <artifactId>terradatum-jdbc</artifactId>
-        <version>${metrics-project.version}</version>
+        <version>${terradatum-jdbc.version}</version>
       </dependency>
       <dependency>
         <groupId>com.terradatum</groupId>
         <artifactId>terradatum-jdbc-codegen</artifactId>
-        <version>${metrics-project.version}</version>
+        <version>${terradatum-jdbc.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

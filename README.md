@@ -5,16 +5,72 @@ Why another data access abstraction?
 
 This project was born of the question: how can I run an application targeting both PPAS and Oracle?
 
-PPAS has remarkable feature parity at the database, with support for PG/SQL partitioning language (as opposed to the PostgreSQL
-rules-based partitioning), packages and collection Object-Relational (ORDBMS) types, to name a few of the items of greatest
-interest to us. What options do you have if, for better of worse, you make heavy use of in-database ORDBMS types (`OBJECT` and
-`TABLE` types)?
+Given an object `TABLE` type composed of the following:
+```
+CREATE TYPE my_obj AS OBJECT (
+  foo varchar(10),
+  baz my_other_obj
+);
+
+CREATE TYPE my_other_obj AS OBJECT (
+  bar varchar(10)
+);
+
+CREATE TYPE my_tbl IS TABLE OF my_obj;
+```
+
+**Oracle:**
+```
+OracleCallableStatement cs = connection.prepareCall("{? = call some_pkg.get_table_type_by_id(?)}");
+cs.registerOutParameter(1, MyTbl._SQL_TYPECODE, MyTbl._SQL_NAME);
+cs.setNUMBER(2, new NUMBER(1));
+
+cs.execute();
+
+MyTbl myTbl = (MyTbl)cs.getORAData(1, MyTbl.getORADataFactory();
+MyObj myObj = myTbl.get(1);
+MyOtherObj myOtherObj = myObj.getBaz();
+String bar = myOtherObj.getBar();
+```
+
+**EDB:**
+```
+CallableStatement cs = connection.prepareCall("{? = call some_pkg.get_table_type_by_id(?)}");
+cs.registerOutParameter(1, Types.ARRAY);
+cs.setBigDecimal(2, BigDecimal.valueOf(1));
+
+cs.execute();
+
+Array myTblArray = cs.getArray(1)
+Struct[] myTbl = (Struct[])myTblArray.getArray();
+Struct myObj = myTbl[0];
+Struct myOtherObj = (Struct)myObj.getAttributes[1];
+String bar = (String)myOtherObj.getAttributes[0];
+```
+
+**Terradatum JDBC for Oracle and EDB:**
+```
+DbCallableStatementAdapter cs = connectionAdapter.prepareCallAdapter({? = call some_pkg.get_table_type_by_id(?)}");
+cs.registerArrayOutParameter(1, MyTbl.SQL_TYPE_NAME);
+cs.setNumeric(2, 1);
+
+cs.execute();
+
+MyTbl myTbl = cs.getArray(1, MyTbl.class);
+MyObj myObj = myTbl.get(1);
+MyOtherObj myOtherObj = myObj.getBaz();
+String bar = myOtherObj.getBar();
+```
+
+PPAS has remarkable feature parity with Oracle at the database level, with support for PG/SQL partitioning language (as opposed to
+the PostgreSQL rules-based partitioning), packages and collection Object-Relational (ORDBMS) types. What options do you have if,
+for better of worse, you make heavy use of in-database ORDBMS types (`OBJECT` and `TABLE` types)?
 
 The EnterpriseDB (EDB) JDBC drivers do not offer the same level of support as OJDBC, making it a challenge when trying to write
 code that will work with both PPAS and Oracle ORDBMS constructs.
 
 The tools usually used to abstract away the differences between PPAS and Oracle all require non-trivial effort - in every case
-requiring almost the same amount of effort as that required to add a completely new database to their list of supported RDBMS'.
+needing almost the same amount of effort as that required to add a completely new database to their list of supported RDBMS'.
 
 The Landscape
 -------------
@@ -82,12 +138,288 @@ The Solution
 #### API
 
 The API uses the adapter and decorator patterns to provide a fully-functional JDBC API, delegating client calls into the
-underlying connection. When working with `OBJECT` or `TABLE` Java representations, the API expects those representations to implement or extend
-a custom interface or class:
-* DbStruct - an extension to the `java.sql.Struct` JDBC interface that supports hydrating and dehydrating objects. The challenge
+underlying connection. When working with `OBJECT` or `TABLE` Java representations, the API expects those representations to
+implement or extend a custom interface or class:
+* [`DbStruct`][11] - an extension to the `java.sql.Struct` JDBC interface that supports hydrating and dehydrating objects. The challenge
 here is that the JDBC `Struct` type is essentially a read-only interface, where the caller is expected to use an instance of the
-JDBC `java.sql.Connection` to `createArrayOf` or via one of the calls that retrieves the data from the database and hydrates the
-`Struct` before the caller accesses it. With
+JDBC `java.sql.Connection` to `createStruct` before then passing that `Struct` in as a parameter, or via one of the calls that
+retrieves the data from the database and hydrates the `Struct` before the caller accesses it. With similar incantations required
+for working with `java.sql.Array` types.
+* [`JdbcArrayList`][12] & [`StructArrayList`][13] - wraps and understands how to inspect and hydrate `Array` and `Struct` types. Decorates the
+[Guava][14] [`ForwardingList<T>`][15].
+* [`DbConnectionAdapter`][16], [`DbStatementAdapter`][17], [`DbPreparedStatementAdapter`][18] and [`DbCallableStatementAdapter`][19] interfaces and
+their abstract and EDB and Oracle implementations. The decorations on these adapters adjust their behavior to suite the underlying
+connection, e.g. use `createArrayOf` for EDB and `createARRAY` for Oracle.
+
+**Maven** _(this is pending - haven't yet pushed an artifact to the Central repository)_
+```
+<dependency>
+  <groupId>com.terradatum</groupId>
+  <artifactId>terradatum-jdbc</artifactId>
+  <version>1.0-SNAPSHOT</version> <!-- once published to Central, this will change -->
+</dependency>
+```
+
+#### Code Generation
+
+While you could hand-craft your implementation of the `DbStruct` and `StructArrayList` models, it's not required as there is a
+codegenerator and maven plugin that harnesses that generator.
+
+You can also pull the [StringTemplate][20] ([templates][21]) files from this repository and use them as a starting point for
+further customizing your model implementation.
+
+The code generator only pulls model data from PPAS in the assumption that it is the single source of truth - it could further be
+extended to support Oracle, but that wasn't on the roadmap.
+
+Currently the `terradatum-jdbc-codegen` artifact is not a runnable JAR - it has outside dependencies and no MANIFEST.MF file.
+Creating a fat JAR and tooling it up so that it can run on the command line is not currently on the roadmap either.
+
+However, there is a Maven plugin.
+**Maven:** _(this is pending - haven't yet pushed an artifact to the Central repository)_
+```
+<build>
+  <plugins>
+    <plugin>
+      <groupId>com.terradatum</groupId>
+      <artifactId>terradatum-jdbc-codegen-plugin</artifactId>
+      <version>1.0-SNAPSHOT</version>
+      <configuration>
+        <!--skip>true</skip-->
+        <url>${edb.connection-url}</url>
+        <username>${edb.username}</username>
+        <password>${edb.password}</password>
+        <package-name>com.terradatum</package-name>
+        <!-- Schemas to search to create model from - name appended to package name above -->
+        <schemas>
+          <schema>monkeys</schema>
+          <schema>humans</schema>
+        </schemas>
+        <!-- Regex pattern, whitespace ignored and comments allowed. Use '?i:' for case-insensitive regex -->
+        <type-includes>(?i: monkeys\.my_obj| monkeys\.my_other_obj| monkeys\.my_tbl)</type-includes>
+        <type-excludes>(?i: humans\.some_obj| humans\.some_other_obj)</type-excludes>
+      </configuration>
+      <executions>
+        <execution>
+          <id>generate-model</id>
+          <goals>
+            <goal>generate</goal>
+          </goals>
+        </execution>
+      </executions>
+      <dependencies>
+        <!-- If the EDB JDBC driver is marked as 'provided' scope, you may need the following stanza -->
+        <dependency>
+          <groupId>com.edb</groupId>
+          <artifactId>edb-jdbc17</artifactId>
+          <version>${edb-jdbc.version}</version>
+          <scope>compile</scope>
+        </dependency>
+      </dependencies>
+    </plugin>
+  </plugins>
+</build>
+```
+To get more information about the available configuration you can run:
+```
+mvn help:describe -Dplugin=com.terradatum:terradatum-jdbc-codegen-plugin
+```
+The code generator ships with the three StringTemplate group files necessary to create the object model.
+
+If you want to customize those templates, by default the plugin looks in `src/main/resources/templates` for three template group
+files:
+1. types.stg - maps database types to Java types
+2. ojb.stg - the `OBJECT` to `DbStruct` template
+3. tbl.stg - tho `TABLE` to `JdbcArrayList` or `StructArrayList` template
+The location of the template group files can be changed using the Maven configuration.
+
+By default the output is placed in `target/generated-sources/jdbc-codegen`.
+
+**Example `DbStruct`:**
+```
+package com.terradatum.monkeys;
+
+import com.terradatum.jdbc.converters.ConverterUtil;
+import com.terradatum.jdbc.DbStruct;
+import com.google.common.base.MoreObjects;
+
+import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
+import java.sql.Array;
+import java.sql.SQLException;
+import java.sql.Struct;
+import java.sql.Timestamp;
+import java.util.Map;
+import java.util.Objects;
+
+/**
+ * DO NOT MODIFY!!! This class was generated by the Terradatum JDBC Code Generator and will be overwritten if regenerated
+ * @date 2016-03-03T08:24:09.612
+ */
+public class MyObj implements DbStruct {
+  public static final String SQL_TYPE_NAME = "monkeys.my_obj";
+
+  private String foo;
+  private com.terradatum.monkeys.MyOtherObj baz;
+
+  /**
+   * Required default constructor.
+   */
+  @SuppressWarnings("unused")
+  public MyObj() {
+  }
+
+    /**
+     * All-elements, type-safe constructor
+     */
+  @SuppressWarnings("unused")
+  public MyObj(String foo, com.terradatum.monkeys.MyOtherObj baz) {
+    this.foo = foo;
+    this.baz = baz;
+
+  }
+
+  /**
+   * Set the {@link Struct}, which is then parsed and hydrated into the properties of the {@link DbStruct}.
+   *
+   * There are numerous casts and other shenanigans occurring here, so this method can throw numerous exceptions.
+   * This is a better solution than a method that hides all exceptions and prevents the call site from responding
+   * accordingly.
+   * @param struct the {@link java.sql.Struct} which is used as the model for this {@link DbStruct} object
+   * @throws SQLException
+   * @throws NoSuchMethodException
+   * @throws NoSuchFieldException
+   * @throws IllegalAccessException
+   * @throws InvocationTargetException
+   */
+  @SuppressWarnings("unused")
+  public void setStruct(Struct struct) throws SQLException, NoSuchMethodException, NoSuchFieldException,
+            IllegalAccessException, InvocationTargetException {
+    if (struct != null) {
+      setAttributes(struct.getAttributes());
+    }
+  }
+
+  @Override
+  public String getSQLTypeName() throws SQLException {
+    return SQL_TYPE_NAME;
+  }
+
+  @Override
+  public Object[] getAttributes() throws SQLException {
+    return new Object[]{foo, baz};
+  }
+
+  @Override
+  public Object[] getAttributes(Map<String, Class<?>> map) throws SQLException {
+    return getAttributes();
+  }
+
+  @Override
+  public void setAttributes(Object[] attributes) throws SQLException, InvocationTargetException,
+            NoSuchMethodException, IllegalAccessException, NoSuchFieldException {
+    foo = ConverterUtil.convert(attributes[0], String.class);
+    baz = new com.terradatum.monkeys.MyOtherObj();
+    baz.setStruct((Struct) attributes[1]);
+
+  }
+
+  public String getFoo() {
+    return foo;
+  }
+
+  public void setFoo(String foo) {
+    this.foo = foo;
+  }
+
+  public com.terradatum.monkeys.MyOtherObj getBaz() {
+    return baz;
+  }
+
+  public void setBaz(com.terradatum.monkeys.MyOtherObj baz) {
+    this.baz = baz;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    MyObj that = (MyObj) o;
+    return
+      Objects.equals(getFoo(), that.getFoo()) &&
+      Objects.equals(getBaz(), that.getBaz());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        getFoo(),
+        getBaz());
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("foo", getFoo())
+        .add("baz", getBaz()).toString();
+  }
+}
+```
+**Example `StructArrayList<E>`:**
+```
+package com.terradatum.monkeys;
+
+import com.terradatum.jdbc.JdbcArrayList;
+import com.terradatum.jdbc.StructArrayList;
+
+import java.lang.reflect.InvocationTargetException;
+import java.sql.Array;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+/**
+ * DO NOT MODIFY!!! This class was generated by the Terradatum JDBC Code Generator and will be overwritten if regenerated
+ * @date 2016-03-03T08:24:09.761
+ */
+public class MyTbl extends StructArrayList<com.terradatum.monkeys.MyObj> {
+  public static final String SQL_TYPE_NAME = "monkeys.my_tbl";
+    private final ArrayList<com.terradatum.monkeys.MyObj> delegate = new ArrayList<>();
+
+  /**
+   * Required default constructor.
+   */
+  @SuppressWarnings("unused")
+  public MyTbl() {
+  }
+
+  @Override
+  protected ArrayList<com.terradatum.monkeys.MyObj> delegate() {
+    return delegate;
+  }
+
+  @Override
+  public String getSQLTypeName() {
+    return SQL_TYPE_NAME;
+  }
+
+  @Override
+  public IdNameTbl setArray(Array array) throws SQLException, InvocationTargetException,
+      NoSuchMethodException, IllegalAccessException, NoSuchFieldException {
+      super.setArray(array);
+      return this;
+  }
+
+  @Override
+  public MyTbl setElements(com.terradatum.monkeys.MyObj[] elements) throws SQLException {
+      super.setElements(elements);
+      return this;
+  }
+}
+```
 
 [1]: https://docs.oracle.com/javase/7/docs/api/java/sql/Connection.html#createStruct(java.lang.String,%20java.lang.Object[])
 [2]: https://docs.oracle.com/javase/7/docs/api/java/sql/Connection.html#createArrayOf(java.lang.String,%20java.lang.Object[])
@@ -99,3 +431,14 @@ JDBC `java.sql.Connection` to `createArrayOf` or via one of the calls that retri
 [8]: https://github.com/nhibernate/nhibernate-core/tree/master/src/NHibernate/Dialect
 [9]: http://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html
 [10]: http://jooq.org
+[11]: src/main/java/com/terradatum/jdbc/DbStruct.java
+[12]: src/main/java/com/terradatum/jdbc/JdbcArrayList.java
+[13]: src/main/java/com/terradatum/jdbc/StructArrayList.java
+[14]: https://github.com/google/guava
+[15]: https://github.com/google/guava/wiki/CollectionHelpersExplained#forwarding-decorators
+[16]: src/main/java/com/terradatum/jdbc/DbConnectionAdapter.java
+[17]: src/main/java/com/terradatum/jdbc/DbStatementAdapter.java
+[18]: src/main/java/com/terradatum/jdbc/DbPreparedStatementAdapter.java
+[19]: src/main/java/com/terradatum/jdbc/DbCallableStatementAdapter.java
+[20]: http://www.stringtemplate.org
+[21]: codegen/codegen/src/main/resources/templates
