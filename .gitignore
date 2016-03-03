@@ -1,0 +1,29 @@
+# Misc
+build/
+out/
+.tags
+tags
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
+# Eclipse
+bin/
+# Locally stored "Eclipse launch configurations"
+# Force-add *.launch files to share Run Configurations
+*.launch
+
+# IntelliJ
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dataSources.ids
+## High-churn files
+.idea/uiDesigner.xml

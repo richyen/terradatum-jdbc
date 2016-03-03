@@ -6,7 +6,7 @@ Why another data access abstraction?
 This project was born of the question: how can I run an application targeting both PPAS and Oracle?
 
 Given an object `TABLE` type composed of the following:
-```
+```sql
 CREATE TYPE my_obj AS OBJECT (
   foo varchar(10),
   baz my_other_obj
@@ -20,7 +20,7 @@ CREATE TYPE my_tbl IS TABLE OF my_obj;
 ```
 
 **Oracle:**
-```
+```java
 OracleCallableStatement cs = connection.prepareCall("{? = call some_pkg.get_table_type_by_id(?)}");
 cs.registerOutParameter(1, MyTbl._SQL_TYPECODE, MyTbl._SQL_NAME);
 cs.setNUMBER(2, new NUMBER(1));
@@ -34,7 +34,7 @@ String bar = myOtherObj.getBar();
 ```
 
 **EDB:**
-```
+```java
 CallableStatement cs = connection.prepareCall("{? = call some_pkg.get_table_type_by_id(?)}");
 cs.registerOutParameter(1, Types.ARRAY);
 cs.setBigDecimal(2, BigDecimal.valueOf(1));
@@ -49,7 +49,7 @@ String bar = (String)myOtherObj.getAttributes[0];
 ```
 
 **Terradatum JDBC for Oracle and EDB:**
-```
+```java
 DbCallableStatementAdapter cs = connectionAdapter.prepareCallAdapter({? = call some_pkg.get_table_type_by_id(?)}");
 cs.registerArrayOutParameter(1, MyTbl.SQL_TYPE_NAME);
 cs.setNumeric(2, 1);
@@ -152,7 +152,7 @@ their abstract and EDB and Oracle implementations. The decorations on these adap
 connection, e.g. use `createArrayOf` for EDB and `createARRAY` for Oracle.
 
 **Maven** _(this is pending - haven't yet pushed an artifact to the Central repository)_
-```
+```xml
 <dependency>
   <groupId>com.terradatum</groupId>
   <artifactId>terradatum-jdbc</artifactId>
@@ -176,7 +176,7 @@ Creating a fat JAR and tooling it up so that it can run on the command line is n
 
 However, there is a Maven plugin.
 **Maven:** _(this is pending - haven't yet pushed an artifact to the Central repository)_
-```
+```xml
 <build>
   <plugins>
     <plugin>
@@ -220,7 +220,7 @@ However, there is a Maven plugin.
 </build>
 ```
 To get more information about the available configuration you can run:
-```
+```bash
 mvn help:describe -Dplugin=com.terradatum:terradatum-jdbc-codegen-plugin
 ```
 The code generator ships with the three StringTemplate group files necessary to create the object model.
@@ -235,7 +235,7 @@ The location of the template group files can be changed using the Maven configur
 By default the output is placed in `target/generated-sources/jdbc-codegen`.
 
 **Example `DbStruct`:**
-```
+```java
 package com.terradatum.monkeys;
 
 import com.terradatum.jdbc.converters.ConverterUtil;
@@ -370,7 +370,7 @@ public class MyObj implements DbStruct {
 }
 ```
 **Example `StructArrayList<E>`:**
-```
+```java
 package com.terradatum.monkeys;
 
 import com.terradatum.jdbc.JdbcArrayList;
