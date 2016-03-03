@@ -21,7 +21,8 @@ CREATE TYPE my_tbl IS TABLE OF my_obj;
 
 **Oracle:**
 ```java
-OracleCallableStatement cs = connection.prepareCall("{? = call some_pkg.get_table_type_by_id(?)}");
+OracleCallableStatement cs =
+  connection.prepareCall("{? = call some_pkg.get_table_type_by_id(?)}");
 cs.registerOutParameter(1, MyTbl._SQL_TYPECODE, MyTbl._SQL_NAME);
 cs.setNUMBER(2, new NUMBER(1));
 
@@ -35,7 +36,8 @@ String bar = myOtherObj.getBar();
 
 **EDB:**
 ```java
-CallableStatement cs = connection.prepareCall("{? = call some_pkg.get_table_type_by_id(?)}");
+CallableStatement cs =
+  connection.prepareCall("{? = call some_pkg.get_table_type_by_id(?)}");
 cs.registerOutParameter(1, Types.ARRAY);
 cs.setBigDecimal(2, BigDecimal.valueOf(1));
 
@@ -50,7 +52,8 @@ String bar = (String)myOtherObj.getAttributes[0];
 
 **Terradatum JDBC for Oracle and EDB:**
 ```java
-DbCallableStatementAdapter cs = connectionAdapter.prepareCallAdapter({? = call some_pkg.get_table_type_by_id(?)}");
+DbCallableStatementAdapter cs =
+  connectionAdapter.prepareCallAdapter("{? = call some_pkg.get_table_type_by_id(?)}");
 cs.registerArrayOutParameter(1, MyTbl.SQL_TYPE_NAME);
 cs.setNumeric(2, 1);
 
@@ -431,9 +434,9 @@ public class MyTbl extends StructArrayList<com.terradatum.monkeys.MyObj> {
 [8]: https://github.com/nhibernate/nhibernate-core/tree/master/src/NHibernate/Dialect
 [9]: http://docs.spring.io/spring/docs/current/spring-framework-reference/html/jdbc.html
 [10]: http://jooq.org
-[11]: src/main/java/com/terradatum/jdbc/DbStruct.java
-[12]: src/main/java/com/terradatum/jdbc/JdbcArrayList.java
-[13]: src/main/java/com/terradatum/jdbc/StructArrayList.java
+[11]: jdbc/src/main/java/com/terradatum/jdbc/DbStruct.java
+[12]: jdbc/src/main/java/com/terradatum/jdbc/JdbcArrayList.java
+[13]: jdbc/src/main/java/com/terradatum/jdbc/StructArrayList.java
 [14]: https://github.com/google/guava
 [15]: https://github.com/google/guava/wiki/CollectionHelpersExplained#forwarding-decorators
 [16]: src/main/java/com/terradatum/jdbc/DbConnectionAdapter.java
