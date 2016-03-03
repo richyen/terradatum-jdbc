@@ -1,93 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.terradatum</groupId>
-    <artifactId>metrics-project</artifactId>
-    <version>4.9-SNAPSHOT</version>
+    <artifactId>terradatum-jdbc-parent</artifactId>
+    <version>1.0-SNAPSHOT</version>
   </parent>
-  <artifactId>terradatum-jdbc-parent</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
-  <modules>
-    <module>jdbc</module>
-    <module>codegen/codegen</module>
-    <module>codegen/maven-plugin</module>
-  </modules>
-  <properties>
-    <terradatum-jdbc.version>1.0-SNAPSHOT</terradatum-jdbc.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <!-- dependency versions -->
-    <edb-jdbc.version>9.4.1201</edb-jdbc.version>
-    <ojdbc.version>11.2.0.3.0-1</ojdbc.version>
-    <jetbrains-annotations.version>15.0</jetbrains-annotations.version>
-    <guava.version>19.0</guava.version>
-    <st4.version>4.0.8</st4.version>
-    <junit.version>4.11</junit.version>
+  <artifactId>terradatum-jdbc</artifactId>
 
-    <!-- ORACLE -->
-    <oracle.class-name>${ojdbc.driver-class-name}</oracle.class-name>
-    <oracle.connection-url>${oracle-metrics-ds.connection-url}</oracle.connection-url>
-    <oracle.username>${oracle-metrics-ds.user-name}</oracle.username>
-    <oracle.password>${oracle-metrics-ds.password}</oracle.password>
-
-    <!-- EDB -->
-    <edb.class-name>${edb-jdbc.driver-class-name}</edb.class-name>
-    <edb.connection-url>${edb-metrics-ds.connection-url}</edb.connection-url>
-    <edb.username>${edb-metrics-ds.user-name}</edb.username>
-    <edb.password>${edb-metrics-ds.password}</edb.password>
-  </properties>
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>com.edb</groupId>
-        <artifactId>edb-jdbc17</artifactId>
-        <version>${edb-jdbc.version}</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>com.oracle</groupId>
-        <artifactId>ojdbc6</artifactId>
-        <version>${ojdbc.version}</version>
-        <scope>compile</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.jetbrains</groupId>
-        <artifactId>annotations</artifactId>
-        <version>${jetbrains-annotations.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <version>${guava.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.antlr</groupId>
-        <artifactId>ST4</artifactId>
-        <version>${st4.version}</version>
-      </dependency>
-      <!-- test -->
-      <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>${junit.version}</version>
-        <scope>test</scope>
-      </dependency>
-      <!-- server dependencies -->
-      <dependency>
-        <groupId>com.terradatum</groupId>
-        <artifactId>terradatum-jdbc</artifactId>
-        <version>${terradatum-jdbc.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>com.terradatum</groupId>
-        <artifactId>terradatum-jdbc-codegen</artifactId>
-        <version>${terradatum-jdbc.version}</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>com.oracle</groupId>
+      <artifactId>ojdbc6</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.edb</groupId>
+      <artifactId>edb-jdbc17</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-all</artifactId>
+    </dependency>
+  </dependencies>
+  <build>
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
+  </build>
 </project>
