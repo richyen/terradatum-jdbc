@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/jdbc/terradatum-jdbc.iml" filepath="$PROJECT_DIR$/jdbc/terradatum-jdbc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/codegen/codegen/terradatum-jdbc-codegen.iml" filepath="$PROJECT_DIR$/codegen/codegen/terradatum-jdbc-codegen.iml" />
+      <module fileurl="file://$PROJECT_DIR$/codegen/maven-plugin/terradatum-jdbc-codegen-plugin.iml" filepath="$PROJECT_DIR$/codegen/maven-plugin/terradatum-jdbc-codegen-plugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/terradatum-jdbc-parent.iml" filepath="$PROJECT_DIR$/terradatum-jdbc-parent.iml" />
+    </modules>
+  </component>
+</project>
