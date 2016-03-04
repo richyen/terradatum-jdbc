@@ -3,7 +3,8 @@ Terradatum JDBC for ORDBMS
 
 Why another data access abstraction?
 
-This project was born of the question: how can I run an application targeting both PPAS and Oracle?
+This project was born of the question: how can I run an application targeting both Postgres Plus Advanced Server (PPAS) and
+Oracle?
 
 Given an object `TABLE` type composed of the following:
 ```sql
@@ -166,10 +167,12 @@ connection, e.g. use `createArrayOf` for EDB and `createARRAY` for Oracle.
 #### Code Generation
 
 While you could hand-craft your implementation of the `DbStruct` and `StructArrayList` models, it's not required as there is a
-codegenerator and maven plugin that harnesses that generator.
+codegen and maven plugin that harnesses that generator.
 
 You can also pull the [StringTemplate][20] ([templates][21]) files from this repository and use them as a starting point for
-further customizing your model implementation.
+further customizing your model implementation. The plugin will look for these files in `src/main/resources/templates` unless
+your configuration tells it otherwise. If you don't supply your own StringTemplate group files, the code generator will use
+the ones supplied with the library.
 
 The code generator only pulls model data from PPAS in the assumption that it is the single source of truth - it could further be
 extended to support Oracle, but that wasn't on the roadmap.
@@ -178,6 +181,7 @@ Currently the `terradatum-jdbc-codegen` artifact is not a runnable JAR - it has 
 Creating a fat JAR and tooling it up so that it can run on the command line is not currently on the roadmap either.
 
 However, there is a Maven plugin.
+
 **Maven:** _(this is pending - haven't yet pushed an artifact to the Central repository)_
 ```xml
 <build>
@@ -230,6 +234,7 @@ The code generator ships with the three StringTemplate group files necessary to 
 
 If you want to customize those templates, by default the plugin looks in `src/main/resources/templates` for three template group
 files:
+
 1. types.stg - maps database types to Java types
 2. ojb.stg - the `OBJECT` to `DbStruct` template
 3. tbl.stg - tho `TABLE` to `JdbcArrayList` or `StructArrayList` template
