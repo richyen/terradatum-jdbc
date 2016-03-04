@@ -122,10 +122,10 @@ has been put into making JPA work with PostgreSQL, for instance, is useful only 
 PPAS. Any additional functionality you may be looking to access in PPAS, like packages or collection types, isn't supported.
 
 ### Spring JdbcTemplate and jOOQ
-While [Spring's JdbcTemplate][9] and [jOOQ][10] are a better fit than JPA because their API's run "closer to the metal" of the JDBC API,
-neither has an implementation that supports those features offered by PPAS that are divergent from PostgreSQL. Again, much work
-would need to be done to add functionality to both in order to support the needs of an application that requires the ORDBMS
-abilities of PPAS.
+While [Spring's JdbcTemplate][9] and [jOOQ][10] are a better fit than JPA because their API's run "closer to the metal" of the
+JDBC API, neither has an implementation that supports those features offered by PPAS that are divergent from PostgreSQL. Again,
+much work would need to be done to add functionality to both in order to support the needs of an application that requires the
+ORDBMS abilities of PPAS.
 
 The Solution
 ------------
@@ -144,16 +144,16 @@ The Solution
 The API uses the adapter and decorator patterns to provide a fully-functional JDBC API, delegating client calls into the
 underlying connection. When working with `OBJECT` or `TABLE` Java representations, the API expects those representations to
 implement or extend a custom interface or class:
-* [`DbStruct`][11] - an extension to the `java.sql.Struct` JDBC interface that supports hydrating and dehydrating objects. The challenge
-here is that the JDBC `Struct` type is essentially a read-only interface, where the caller is expected to use an instance of the
-JDBC `java.sql.Connection` to `createStruct` before then passing that `Struct` in as a parameter, or via one of the calls that
-retrieves the data from the database and hydrates the `Struct` before the caller accesses it. With similar incantations required
-for working with `java.sql.Array` types.
-* [`JdbcArrayList`][12] & [`StructArrayList`][13] - wraps and understands how to inspect and hydrate `Array` and `Struct` types. Decorates the
-[Guava][14] [`ForwardingList<T>`][15].
-* [`DbConnectionAdapter`][16], [`DbStatementAdapter`][17], [`DbPreparedStatementAdapter`][18] and [`DbCallableStatementAdapter`][19] interfaces and
-their abstract and EDB and Oracle implementations. The decorations on these adapters adjust their behavior to suite the underlying
-connection, e.g. use `createArrayOf` for EDB and `createARRAY` for Oracle.
+* [`DbStruct`][11] - an extension to the `java.sql.Struct` JDBC interface that supports hydrating and dehydrating objects. The
+challenge here is that the JDBC `Struct` type is essentially a read-only interface, where the caller is expected to use an
+instance of the JDBC `java.sql.Connection` to `createStruct` before then passing that `Struct` in as a parameter, or via one of
+the calls that retrieves the data from the database and hydrates the `Struct` before the caller accesses it. With similar
+incantations required for working with `java.sql.Array` types.
+* [`JdbcArrayList`][12] & [`StructArrayList`][13] - wraps and understands how to inspect and hydrate `Array` and `Struct` types.
+Decorates the [Guava][14] [`ForwardingList<T>`][15].
+* [`DbConnectionAdapter`][16], [`DbStatementAdapter`][17], [`DbPreparedStatementAdapter`][18] and [`DbCallableStatementAdapter`][19]
+interfaces and their abstract EDB and Oracle implementations. The decorations on these adapters adjust their behavior to suite the
+underlying connection, e.g. use `createArrayOf` for EDB and `createARRAY` for Oracle.
 
 **Maven** _(this is pending - haven't yet pushed an artifact to the Central repository)_
 ```xml
