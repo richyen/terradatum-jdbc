@@ -27,11 +27,11 @@ public class JdbcConnectionAdapterFactory {
     try {
       if (connection.isWrapperFor(OracleConnection.class)) {
         return getOracleConnectionAdapter(connection.unwrap(OracleConnection.class));
-      }
-    } catch (SQLException e) {
-      if (connection.isWrapperFor(Jdbc4Connection.class)) {
+      } else if (connection.isWrapperFor(Jdbc4Connection.class)) {
         return getEdbConnectionAdapter(connection.unwrap(Jdbc4Connection.class), searchPath);
       }
+    } catch (SQLException e) {
+      throw new IllegalArgumentException("The Connection of type " + connectionClass.getName() + " has no adapters.", e);
     }
 
     throw new IllegalArgumentException("The Connection of type " + connectionClass.getName() + " has no adapters.");
