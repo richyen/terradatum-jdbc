@@ -9,16 +9,15 @@ import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+
+import static java.lang.System.arraycopy;
+import static java.util.Arrays.asList;
 
 /**
  * @author rbellamy@terradatum.com
@@ -54,8 +53,8 @@ public class Generator {
       ArrayList<String> searchPath = null;
       if (args.length > 1) {
         String[] searchPathArray = new String[args.length - 2];
-        System.arraycopy(args, 1, searchPathArray, 0, searchPathArray.length);
-        searchPath = new ArrayList<>(Arrays.asList(searchPathArray));
+        arraycopy(args, 1, searchPathArray, 0, searchPathArray.length);
+        searchPath = new ArrayList<>(asList(searchPathArray));
       }
 
       String outputDirectoryPath = projectBaseDir + "/target/generated-test-sources/jdbc-codegen";
@@ -64,14 +63,13 @@ public class Generator {
       File tableTemplateFile = new File(templatesDirectoryPath + "/tbl.stg");
       File outputDirectory = new File(outputDirectoryPath);
 
-      Generator.execute(new Configuration(p.getProperty("edb.connection-url"), p.getProperty("edb.username"), p.getProperty("edb.password"),
+      execute(new Configuration(p.getProperty("edb.connection-url"), p.getProperty("edb.username"), p.getProperty("edb.password"),
           packageName, outputDirectory, objectTemplateFile, tableTemplateFile, searchPath, null,
           "(?i:\n" + "metrics\\.agent_contact_info_obj|\n" + "metrics\\.agent_contact_info_tbl|\n"
               + "terradatum\\.mls_agent_id_obj|\n" + "terradatum\\.mls_agent_id_tbl|\n" + "terradatum\\.mls_area_type_obj|\n"
               + "terradatum\\.mls_area_type_tbl|\n" + "terradatum\\.number_tbl|\n" + "terradatum\\.string_tbl|\n" + ")"));
-
     } catch (ClassNotFoundException | SQLException | IOException e) {
-      e.printStackTrace();
+      logger.debug(e.getMessage(), e);
     }
   }
 
