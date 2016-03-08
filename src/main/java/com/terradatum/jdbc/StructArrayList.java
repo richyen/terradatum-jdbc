@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Array;
 import java.sql.SQLException;
 import java.sql.Struct;
+import java.util.Collections;
 
 /**
  * @author rbellamy@terradatum.com
@@ -15,16 +16,14 @@ public abstract class StructArrayList<S extends DbStruct> extends JdbcArrayList<
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public StructArrayList<?> setArray(Array array)
       throws SQLException, NoSuchMethodException, NoSuchFieldException, IllegalAccessException, InvocationTargetException {
     if (array != null) {
-      // noinspection unchecked
       Object[] objects = (Object[]) array.getArray();
       for (Object object : objects) {
         add((Struct) object);
       }
-    } else {
-      throw new IllegalArgumentException("The java.sql.Array cannot be null");
     }
     return this;
   }
@@ -32,11 +31,7 @@ public abstract class StructArrayList<S extends DbStruct> extends JdbcArrayList<
   @Override
   public StructArrayList<?> setElements(S[] elements) throws SQLException {
     if (elements != null) {
-      for (S element : elements) {
-        this.add(element);
-      }
-    } else {
-      throw new IllegalArgumentException("The array of elements cannot be null");
+      Collections.addAll(this, elements);
     }
     return this;
   }
