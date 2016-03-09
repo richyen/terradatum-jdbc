@@ -8,6 +8,7 @@ import oracle.jdbc.OracleStatement;
 import java.sql.Array;
 import java.sql.SQLException;
 import java.sql.Struct;
+import java.util.List;
 
 /**
  * @author rbellamy@terradatum.com
@@ -28,12 +29,14 @@ class OracleConnectionAdapter extends JdbcConnectionAdapter implements DbConnect
 
   @Override
   public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
-    return delegate().createARRAY(typeName.toUpperCase(), elements);
+    List elementList = unwindModel(elements);
+    return delegate().createARRAY(typeName.toUpperCase(), elementList.toArray());
   }
 
   @Override
   public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
-    return delegate().createStruct(typeName.toUpperCase(), attributes);
+    List attributeList = unwindModel(attributes);
+    return delegate().createStruct(typeName.toUpperCase(), attributeList.toArray());
   }
 
   @Override
