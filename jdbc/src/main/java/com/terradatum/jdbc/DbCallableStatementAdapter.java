@@ -13,10 +13,6 @@ public interface DbCallableStatementAdapter extends DbPreparedStatementAdapter, 
 
   DbConnectionAdapter getConnectionAdapter();
 
-  void registerArrayOutParameter(int index, String sqlTypeName) throws SQLException;
-
-  void registerStructOutParameter(int index, String sqlTypeName) throws SQLException;
-
   /**
    * Get a {@link DbStruct} returned via this {@link DbCallableStatementAdapter}.
    * 
