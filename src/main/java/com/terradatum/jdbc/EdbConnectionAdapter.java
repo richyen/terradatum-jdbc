@@ -5,6 +5,7 @@ import com.google.common.base.Strings;
 
 import java.sql.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -33,12 +34,14 @@ class EdbConnectionAdapter extends JdbcConnectionAdapter implements DbConnection
 
   @Override
   public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
-    return createTypeWithCorrectSearchPath(typeName, elements, delegate()::createArrayOf);
+    List elementList = unwindModel(elements);
+    return createTypeWithCorrectSearchPath(typeName, elementList.toArray(), delegate()::createArrayOf);
   }
 
   @Override
   public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
-    return createTypeWithCorrectSearchPath(typeName, attributes, delegate()::createStruct);
+    List attributeList = unwindModel(attributes);
+    return createTypeWithCorrectSearchPath(typeName, attributeList.toArray(), delegate()::createStruct);
   }
 
   @Override

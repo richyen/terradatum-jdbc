@@ -1,6 +1,10 @@
 package com.terradatum.jdbc;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
@@ -1295,6 +1299,37 @@ public abstract class JdbcConnectionAdapter extends JdbcAdapterObject implements
   @Override
   public boolean isWrapperFor(Class<?> iface) throws SQLException {
     return delegate().isWrapperFor(iface);
+  }
+
+  /**
+   * This method is called by either {@code createStruct} or {@code createArray}. This method in turn calls one of those two
+   * methods as appropriate. This has the effect of a head-recursive call chain, which is less than ideal.
+   * TODO: Try to make this a tail-recursive call chain
+   * @param modelItems the items to unwind
+   * @return a list of unwound objects
+   * @throws SQLException
+   */
+  protected @NotNull List unwindModel(Object[] modelItems) throws SQLException {
+    List itemList = new ArrayList();
+    for (Object item: modelItems) {
+      if (item != null) {
+        if (StructArrayList.class.isAssignableFrom(item.getClass())) {
+          StructArrayList structArrayList = (StructArrayList) item;
+          itemList.add(createArrayOf(structArrayList.getSQLTypeName(), structArrayList.toArray()));
+        } else if (JdbcArrayList.class.isAssignableFrom(item.getClass())) {
+          JdbcArrayList jdbcArrayList = (JdbcArrayList) item;
+          itemList.add(createArrayOf(jdbcArrayList.getSQLTypeName(), jdbcArrayList.toArray()));
+        } else if (DbStruct.class.isAssignableFrom(item.getClass())) {
+          DbStruct dbStruct = (DbStruct) item;
+          itemList.add(createStruct(dbStruct.getSQLTypeName(), dbStruct.getAttributes()));
+        } else {
+          itemList.add(item);
+        }
+      } else {
+        itemList.add(null);
+      }
+    }
+    return itemList;
   }
 
 }
