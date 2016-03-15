@@ -3,10 +3,7 @@ package com.terradatum.jdbc;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.Executor;
 
 /**
@@ -15,10 +12,13 @@ import java.util.concurrent.Executor;
  */
 public abstract class JdbcConnectionAdapter extends JdbcAdapterObject implements DbConnectionAdapter {
 
+  private final Set<SqlError> sqlErrors;
+
   /**
    * constructor for use by subclasses
    **/
-  protected JdbcConnectionAdapter() {
+  protected JdbcConnectionAdapter(Set<SqlError> sqlErrors) {
+    this.sqlErrors = sqlErrors;
   }
 
   @Override
@@ -1309,6 +1309,7 @@ public abstract class JdbcConnectionAdapter extends JdbcAdapterObject implements
    * @return a list of unwound objects
    * @throws SQLException
    */
+  @SuppressWarnings("unchecked")
   protected @NotNull List unwindModel(Object[] modelItems) throws SQLException {
     List itemList = new ArrayList();
     for (Object item: modelItems) {
@@ -1332,4 +1333,7 @@ public abstract class JdbcConnectionAdapter extends JdbcAdapterObject implements
     return itemList;
   }
 
+  public Set<SqlError> getSqlErrors() {
+    return sqlErrors;
+  }
 }

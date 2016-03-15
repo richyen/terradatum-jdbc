@@ -9,7 +9,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.*;
 
-import static com.terradatum.jdbc.JdbcConnectionAdapterFactory.create;
 import static com.terradatum.jdbc.db.model.MlsAreaTypeTbl.SQL_TYPE_NAME;
 import static java.sql.Types.ARRAY;
 
@@ -32,7 +31,7 @@ public class MlsTest extends AbstractAdapterTest {
       IllegalAccessException, InstantiationException, NoSuchMethodException, NoSuchFieldException, InvocationTargetException {
     int mlsSid = 1;
     String commandText = "{? = call metrics.mls_pkg.get_mls_area_types(?)}";
-    DbConnectionAdapter dbConnectionAdapter = create(connection, searchPath);
+    DbConnectionAdapter dbConnectionAdapter = JdbcConnectionAdapterFactory.create(connection, searchPath);
     DbCallableStatementAdapter dbCallableStatementAdapter = dbConnectionAdapter.prepareCallAdapter(commandText);
     dbCallableStatementAdapter.registerOutParameter(1, ARRAY, SQL_TYPE_NAME);
     dbCallableStatementAdapter.setNumeric(2, mlsSid);
