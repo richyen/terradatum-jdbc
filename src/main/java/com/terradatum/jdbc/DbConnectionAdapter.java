@@ -74,8 +74,9 @@ public interface DbConnectionAdapter extends Connection {
   DbCallableStatementAdapter prepareCallAdapter(String sql) throws SQLException;
 
   /**
-   * Identifies a {@link SQLException} as resulting from a Custom Exception
-   * 
+   * Identifies a {@link SQLException} as resulting from a Custom Exception. Compared against the {@code List} of {@link SqlError}'s
+   * used to construct the {@link DbConnectionAdapter}.
+   *
    * @param sqlException
    *          the {@link SQLException} to test
    * @return returns true if the {@link SQLException} is caused a Custom Exception

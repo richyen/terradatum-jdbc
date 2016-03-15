@@ -1,13 +1,12 @@
 package com.terradatum.jdbc.db;
 
-import com.terradatum.jdbc.AbstractAdapterTest;
-import com.terradatum.jdbc.DbCallableStatementAdapter;
-import com.terradatum.jdbc.DbConnectionAdapter;
-import com.terradatum.jdbc.JdbcConnectionAdapterFactory;
+import com.terradatum.jdbc.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author rbellamy@terradatum.com
@@ -19,7 +18,9 @@ public class SQLExceptionTest extends AbstractAdapterTest {
 
   public void throwSqlException(Connection connection, String searchPath) throws SQLException {
     String commandText = "{? = call metrics.test_error(?)}";
-    dbConnectionAdapter = JdbcConnectionAdapterFactory.create(connection, searchPath);
+    Set<SqlError> sqlErrors = new HashSet<>();
+    sqlErrors.add(new SqlError(20000, "TERR1"));
+    dbConnectionAdapter = JdbcConnectionAdapterFactory.create(connection, sqlErrors, searchPath);
     DbCallableStatementAdapter dbCallableStatementAdapter = dbConnectionAdapter.prepareCallAdapter(commandText);
     dbCallableStatementAdapter.registerOutParameter(1, Types.INTEGER);
     dbCallableStatementAdapter.setString(2, "Some error message");

@@ -11,7 +11,7 @@ public class OraclePreparedStatementTest extends AbstractAdapterTest {
 
   @Test
   public void oraclePreparedStatementIsSelected() throws Exception {
-    try (DbConnectionAdapter dbConnectionAdapter = JdbcConnectionAdapterFactory.create(getOracleConnection(), null)) {
+    try (DbConnectionAdapter dbConnectionAdapter = JdbcConnectionAdapterFactory.create(getOracleConnection())) {
       DbPreparedStatementAdapter preparedStatementAdapter = dbConnectionAdapter
           .prepareStatementAdapter("select count(1) from dual;");
       Assert.assertTrue("Not an OraclePreparedStatement",

@@ -9,6 +9,7 @@ import java.sql.Array;
 import java.sql.SQLException;
 import java.sql.Struct;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author rbellamy@terradatum.com
@@ -18,7 +19,8 @@ class OracleConnectionAdapter extends JdbcConnectionAdapter implements DbConnect
 
   private final OracleConnection delegate;
 
-  public OracleConnectionAdapter(OracleConnection connection) {
+  public OracleConnectionAdapter(OracleConnection connection, Set<SqlError> sqlErrors) throws SQLException {
+    super(sqlErrors);
     this.delegate = connection;
   }
 
@@ -55,7 +57,8 @@ class OracleConnectionAdapter extends JdbcConnectionAdapter implements DbConnect
   }
 
   /**
-   * Identifies a {@link SQLException} as resulting from a Custom Exception
+   * Identifies a {@link SQLException} as resulting from a Custom Exception. Compared against the {@code List} of {@link SqlError}'s
+   * used to construct the {@link DbConnectionAdapter}.
    *
    * @param sqlException
    *          the {@link SQLException} to test
@@ -63,6 +66,16 @@ class OracleConnectionAdapter extends JdbcConnectionAdapter implements DbConnect
    */
   @Override
   public boolean isCustomException(SQLException sqlException) {
-    return sqlException.getErrorCode() >= 20000 && sqlException.getErrorCode() <= 20999;
+    int sqlErrorCode = SqlError.getSqlErrorCode(sqlException);
+
+    if (getSqlErrors() != null) {
+      for (SqlError sqlError : getSqlErrors()) {
+        if (sqlError.getErrorCode() == sqlErrorCode) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
+
 }

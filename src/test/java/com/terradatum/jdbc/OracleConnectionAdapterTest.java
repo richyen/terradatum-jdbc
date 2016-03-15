@@ -17,7 +17,7 @@ public class OracleConnectionAdapterTest extends AbstractAdapterTest {
 
   @Test
   public void oracleConnectionAdapterIsSelected() throws Exception {
-    try (DbConnectionAdapter dbConnectionAdapter = JdbcConnectionAdapterFactory.create(getOracleConnection(), null)) {
+    try (DbConnectionAdapter dbConnectionAdapter = JdbcConnectionAdapterFactory.create(getOracleConnection())) {
       // jdbcConnectionManager.getConnection().getClass returns the package-private T4CConnection class
       // This means the normal type == comparison will not work.
       Assert.assertTrue("Not an OracleConnection",
@@ -27,7 +27,7 @@ public class OracleConnectionAdapterTest extends AbstractAdapterTest {
 
   @Test
   public void canCreateOracleStruct() throws Exception {
-    try (DbConnectionAdapter dbConnectionAdapter = JdbcConnectionAdapterFactory.create(getOracleConnection(), null)) {
+    try (DbConnectionAdapter dbConnectionAdapter = JdbcConnectionAdapterFactory.create(getOracleConnection())) {
       Object[] attributes = {"ABC123", new BigDecimal(1)};
       Struct agentIdStruct = dbConnectionAdapter.createStruct("metrics.agent_id_obj", attributes);
       Assert.assertTrue("Not an Oracle STRUCT", oracle.sql.STRUCT.class.isAssignableFrom(agentIdStruct.getClass()));
@@ -39,7 +39,7 @@ public class OracleConnectionAdapterTest extends AbstractAdapterTest {
 
   @Test
   public void canCreateOracleArray() throws Exception {
-    try (DbConnectionAdapter dbConnectionAdapter = JdbcConnectionAdapterFactory.create(getOracleConnection(), null)) {
+    try (DbConnectionAdapter dbConnectionAdapter = JdbcConnectionAdapterFactory.create(getOracleConnection())) {
       Object[] attributes1 = {"ABC123", new BigDecimal(1)};
       Object[] attributes2 = {"456DEF", new BigDecimal(2)};
       Struct agentIdStruct1 = dbConnectionAdapter.createStruct("metrics.agent_id_obj", attributes1);

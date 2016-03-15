@@ -4,7 +4,6 @@ import com.edb.jdbc4.Jdbc4Connection;
 import com.google.common.base.Strings;
 
 import java.sql.*;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -16,14 +15,8 @@ class EdbConnectionAdapter extends JdbcConnectionAdapter implements DbConnection
 
   private final Jdbc4Connection delegate;
 
-  private static final Set<String> CUSTOM_ERROR_CODES = new HashSet<>();
-
-  static {
-    CUSTOM_ERROR_CODES.add("TERR1"); // Unspecified failure
-    CUSTOM_ERROR_CODES.add("TERR2"); // Login failure
-  }
-
-  public EdbConnectionAdapter(Jdbc4Connection connection) throws SQLException {
+  public EdbConnectionAdapter(Jdbc4Connection connection, Set<SqlError> sqlErrors) throws SQLException {
+    super(sqlErrors);
     this.delegate = connection;
   }
 
@@ -60,7 +53,8 @@ class EdbConnectionAdapter extends JdbcConnectionAdapter implements DbConnection
   }
 
   /**
-   * Identifies a {@link SQLException} as resulting from a Custom Exception
+   * Identifies a {@link SQLException} as resulting from a Custom Exception. Compared against the {@code List} of {@link SqlError}'s
+   * used to construct the {@link DbConnectionAdapter}.
    *
    * @param sqlException
    *          the {@link SQLException} to test
@@ -68,7 +62,16 @@ class EdbConnectionAdapter extends JdbcConnectionAdapter implements DbConnection
    */
   @Override
   public boolean isCustomException(SQLException sqlException) {
-    return isCustomException(sqlException, CUSTOM_ERROR_CODES);
+    String sqlState = SqlError.getSqlState(sqlException);
+
+    if (getSqlErrors() != null) {
+      for (SqlError sqlError : getSqlErrors()) {
+        if (!Strings.isNullOrEmpty(sqlState) && sqlError.getState().equals(sqlState)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**
@@ -121,7 +124,7 @@ class EdbConnectionAdapter extends JdbcConnectionAdapter implements DbConnection
     return name;
   }
 
-  private <T> T createTypeWithCorrectSearchPath(String typeName, Object[] objects, EdbSearchPathCreator<?> creator)
+  private <T> T createTypeWithCorrectSearchPath(String typeName, Object[] objects, EdbConnectionAdapter.EdbSearchPathCreator<?> creator)
       throws SQLException {
     String searchPath = getSearchPath();
     String name = setSearchPathToSchema(typeName);
@@ -129,34 +132,6 @@ class EdbConnectionAdapter extends JdbcConnectionAdapter implements DbConnection
     T ret = (T) creator.create(name.toLowerCase(), objects);
     setSearchPath(searchPath);
     return ret;
-  }
-
-  /**
-   * Gets the SQL state code from the supplied {@link SQLException exception}.
-   * <p>
-   * Some JDBC drivers nest the actual exception from a batched update, so we might need to dig down into the nested exception.
-   * 
-   * @param sqlException
-   *          the exception from which the {@link SQLException#getSQLState() SQL state} is to be extracted
-   * @return the SQL state code
-   */
-  private String getSqlState(SQLException sqlException) {
-    String sqlState = null;
-    if (sqlException != null) {
-      sqlState = sqlException.getSQLState();
-      if (Strings.isNullOrEmpty(sqlState)) {
-        return getSqlState(sqlException.getNextException());
-      }
-    }
-    return sqlState;
-  }
-
-  private boolean isCustomException(SQLException sqlException, Set<?> customStates) {
-    String sqlState = getSqlState(sqlException);
-    if (!Strings.isNullOrEmpty(sqlState) && customStates.contains(sqlState)) {
-      return true;
-    }
-    return false;
   }
 
   interface EdbSearchPathCreator<T> {
