@@ -19,6 +19,11 @@ public class SqlError {
     this.state = state;
   }
 
+  public SqlError(SQLException sqlException) {
+    this.errorCode = getSqlErrorCode(sqlException);
+    this.state = getSqlState(sqlException);
+  }
+
   /**
    * Gets the SQL state code from the supplied {@link SQLException exception}.
    * <p>
@@ -67,6 +72,12 @@ public class SqlError {
     return state;
   }
 
+  /**
+   * If either the {@code sqlErrorCode} or the {@code sqlState} are equal then the exception represented by the {@link SqlError}
+   * matches.
+   * @param o
+   * @return
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -78,7 +89,7 @@ public class SqlError {
 
     SqlError that = (SqlError) o;
     return
-        Objects.equals(getErrorCode(), that.getErrorCode()) &&
+        Objects.equals(getErrorCode(), that.getErrorCode()) ||
             Objects.equals(getState(), that.getState());
   }
 
