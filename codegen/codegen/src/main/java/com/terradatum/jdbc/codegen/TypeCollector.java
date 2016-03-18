@@ -29,6 +29,12 @@ public class TypeCollector {
     connection = DriverManager.getConnection(url, username, password);
   }
 
+  private static boolean isElementComposite(String element) {
+    final String databaseTypes = "(?imx:oid|tid|xid|cid|bool|byte|int2|int4|int8|real|float4|float8|text|name|varchar|char|bpchar|cstring|character|regclass|bytea|date|time|timetz|timestamp|timestamptz|numeric|uuid|money|xml|json|clob)";
+    final Pattern pattern = Pattern.compile(databaseTypes);
+    return !pattern.matcher(element).matches();
+  }
+
   public List<TypeInfo> getMetadata(List<String> schemas, String typeExcludes, String typeIncludes) throws SQLException {
 
     final List<TypeInfo> typeInfos = new ArrayList<>();
@@ -57,102 +63,108 @@ public class TypeCollector {
         + "LEFT OUTER JOIN pg_collation c ON att.attcollation=c.oid\n"
         + "LEFT OUTER JOIN pg_namespace nspc ON c.collnamespace=nspc.oid\n" + "WHERE att.attrelid=?\n" + "ORDER BY attnum";
 
+    //https://terradatum.atlassian.net/browse/PPAS-3651?focusedCommentId=67770&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-67770
+    logger.debug("Resetting the search_path to ensure properly qualified names");
+    try (Statement statement = connection.createStatement()) {
+      statement.execute("SET search_path TO ''");
+    }
+
     logger.debug("Unprepared type query:\n{}", getTypesCommandString);
 
-    PreparedStatement getTypesPreparedStatement = connection.prepareStatement(getTypesCommandString);
-    getTypesPreparedStatement.setArray(1, connection.createArrayOf("text", schemas.toArray()));
+    try (PreparedStatement getTypesPreparedStatement = connection.prepareStatement(getTypesCommandString)) {
 
-    logger.debug("Executing query to return types:\n{}", getTypesPreparedStatement.toString());
+      getTypesPreparedStatement.setArray(1, connection.createArrayOf("text", schemas.toArray()));
 
-    ResultSet typeResultSet = getTypesPreparedStatement.executeQuery();
-    typeLoop: while (typeResultSet.next()) {
-      TypeInfo typeInfo = new TypeInfo();
-      String alias = typeResultSet.getString("alias");
-      String element = typeResultSet.getString("element");
-      int typrelid = typeResultSet.getInt("typrelid");
+      logger.debug("Executing query to return types:\n{}", getTypesPreparedStatement.toString());
 
-      if ((excludesPattern != null && excludesPattern.matcher(alias).matches())
-          || (includesPattern != null && !includesPattern.matcher(alias).matches())) {
-        logger.info("Excluding '{}'", alias);
-        continue typeLoop;
-      }
+      ResultSet typeResultSet = getTypesPreparedStatement.executeQuery();
+      typeLoop:
+      while (typeResultSet.next()) {
+        TypeInfo typeInfo = new TypeInfo();
+        String alias = typeResultSet.getString("alias");
+        String element = typeResultSet.getString("element");
+        int typrelid = typeResultSet.getInt("typrelid");
 
-      if (!Strings.isNullOrEmpty(element) && (excludesPattern != null && excludesPattern.matcher(alias).matches())
-          || (includesPattern != null && !includesPattern.matcher(alias).matches())) {
-
-        logger.info("Excluding TABLE type '{}' because its OBJECT element '{}' is excluded", alias, element);
-        continue typeLoop;
-      }
-
-      logger.info("Including '{}'", alias);
-      typeInfo.setTypeName(alias);
-
-      // typerelid == 0 means it's a TABLE object, and thus has no attributes
-      if (typrelid != 0 && includesPattern != null && includesPattern.matcher(alias).matches()) {
-        logger.debug("Unprepared attribute query:\n{}", getAttributesCommandString);
-
-        PreparedStatement getAttributesPreparedStatement = connection.prepareStatement(getAttributesCommandString);// ,
-                                                                                                                   // typeResultSet.getInt("typrelid")));
-        getAttributesPreparedStatement.setInt(1, typrelid);
-
-        logger.debug("Executing query to return attributes of '{}':\n{}", typeInfo.getTypeName(),
-            getAttributesPreparedStatement.toString());
-
-        ResultSet attributesResultSet = getAttributesPreparedStatement.executeQuery();
-
-        attributeLoop: while (attributesResultSet.next()) {
-          AttributeInfo attributeInfo = new AttributeInfo();
-          String attname = attributesResultSet.getString("attname");
-          String schemaName = attributesResultSet.getString("nspname");
-          String typname = attributesResultSet.getString("typname");
-          String typinput = attributesResultSet.getString("typinput");
-
-          if (typinput.equals("record_in")) { // typinput = 'record_in' is Struct
-            attributeInfo.setStruct(true);
-          } else if (typinput.equals("nestedtable_in")) { // typinput = 'nestedtable_in' is Array
-            attributeInfo.setArray(true);
-          } else if (strings.contains(typname)) { // typname determines if it's a string
-            attributeInfo.setString(true);
-          }
-
-          if (attributeInfo.isStruct() || attributeInfo.isArray()) {
-            attributeInfo.setTypeName(schemaName + "." + typname);
-            attributeInfo.setDifferentSchema(!typeInfo.getSchemaName().equals(schemaName));
-
-            if ((excludesPattern != null && excludesPattern.matcher(attributeInfo.getTypeName()).matches())
-                || (includesPattern != null && !includesPattern.matcher(attributeInfo.getTypeName()).matches())) {
-              logger.warn("Marking '{}' attribute '{}' as type 'unknown' as it was explicitly excluded, "
-                  + "or not explicitly included in the model.", typeInfo.getTypeName(), attributeInfo.getTypeName());
-              attributeInfo.setTypeName("unknown");
-              attributeInfo.setArray(false);
-              attributeInfo.setStruct(false);
-              attributeInfo.setString(false);
-              attributeInfo.setDifferentSchema(false);
-            }
-          } else {
-            attributeInfo.setTypeName(typname);
-          }
-          attributeInfo.setName(attname);
-          typeInfo.getAttributeInfos().add(attributeInfo);
-        }
-        if (typrelid != 0 && typeInfo.getAttributeInfos().size() == 0) {
-          logger.warn("Excluding '{}' - the OBJECT has no attributes", typeInfo.getTypeName());
+        if ((excludesPattern != null && excludesPattern.matcher(alias).matches())
+            || (includesPattern != null && !includesPattern.matcher(alias).matches())) {
+          logger.info("Excluding '{}'", alias);
           continue typeLoop;
         }
-      } else {
-        typeInfo.setElementTypeName(element);
-        typeInfo.setElementComposite(isElementComposite(element));
-      }
 
-      typeInfos.add(typeInfo);
+        if (!Strings.isNullOrEmpty(element) && (excludesPattern != null && excludesPattern.matcher(alias).matches())
+            || (includesPattern != null && !includesPattern.matcher(alias).matches())) {
+
+          logger.info("Excluding TABLE type '{}' because its OBJECT element '{}' is excluded", alias, element);
+          continue typeLoop;
+        }
+
+        logger.info("Including '{}'", alias);
+        typeInfo.setTypeName(alias);
+
+        // typerelid == 0 means it's a TABLE object, and thus has no attributes
+        if (typrelid != 0 && includesPattern != null && includesPattern.matcher(alias).matches()) {
+          logger.debug("Unprepared attribute query:\n{}", getAttributesCommandString);
+
+          try (PreparedStatement getAttributesPreparedStatement = connection.prepareStatement(getAttributesCommandString)) {
+
+            getAttributesPreparedStatement.setInt(1, typrelid);
+
+            logger.debug("Executing query to return attributes of '{}':\n{}", typeInfo.getTypeName(),
+                getAttributesPreparedStatement.toString());
+
+            ResultSet attributesResultSet = getAttributesPreparedStatement.executeQuery();
+
+            attributeLoop:
+            while (attributesResultSet.next()) {
+              AttributeInfo attributeInfo = new AttributeInfo();
+              String attname = attributesResultSet.getString("attname");
+              String schemaName = attributesResultSet.getString("nspname");
+              String typname = attributesResultSet.getString("typname");
+              String typinput = attributesResultSet.getString("typinput");
+
+              if (typinput.equals("record_in")) { // typinput = 'record_in' is Struct
+                attributeInfo.setStruct(true);
+              } else if (typinput.equals("nestedtable_in")) { // typinput = 'nestedtable_in' is Array
+                attributeInfo.setArray(true);
+              } else if (strings.contains(typname)) { // typname determines if it's a string
+                attributeInfo.setString(true);
+              }
+
+              if (attributeInfo.isStruct() || attributeInfo.isArray()) {
+                attributeInfo.setTypeName(schemaName + "." + typname);
+                attributeInfo.setDifferentSchema(!typeInfo.getSchemaName().equals(schemaName));
+
+                if ((excludesPattern != null && excludesPattern.matcher(attributeInfo.getTypeName()).matches())
+                    || (includesPattern != null && !includesPattern.matcher(attributeInfo.getTypeName()).matches())) {
+                  logger.warn("Marking '{}' attribute '{}' as type 'unknown' as it was explicitly excluded, "
+                      + "or not explicitly included in the model.", typeInfo.getTypeName(), attributeInfo.getTypeName());
+                  attributeInfo.setTypeName("unknown");
+                  attributeInfo.setArray(false);
+                  attributeInfo.setStruct(false);
+                  attributeInfo.setString(false);
+                  attributeInfo.setDifferentSchema(false);
+                }
+              } else {
+                attributeInfo.setTypeName(typname);
+              }
+              attributeInfo.setName(attname);
+              typeInfo.getAttributeInfos().add(attributeInfo);
+            }
+            if (typrelid != 0 && typeInfo.getAttributeInfos().size() == 0) {
+              logger.warn("Excluding '{}' - the OBJECT has no attributes", typeInfo.getTypeName());
+              continue typeLoop;
+            }
+          }
+
+        } else {
+          typeInfo.setElementTypeName(element);
+          typeInfo.setElementComposite(isElementComposite(element));
+        }
+
+        typeInfos.add(typeInfo);
+      }
     }
 
     return typeInfos;
-  }
-
-  private static boolean isElementComposite(String element) {
-    final String databaseTypes = "(?imx:oid|tid|xid|cid|bool|byte|int2|int4|int8|real|float4|float8|text|name|varchar|char|bpchar|cstring|character|regclass|bytea|date|time|timetz|timestamp|timestamptz|numeric|uuid|money|xml|json|clob)";
-    final Pattern pattern = Pattern.compile(databaseTypes);
-    return !pattern.matcher(element).matches();
   }
 }
