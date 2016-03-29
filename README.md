@@ -56,7 +56,7 @@ String parentType = subParentObj.getParentType();
 CallableStatement cs =
   connection.prepareCall("{? = call parent_child_pkg.get_parents_by_type(?)}");
 cs.registerOutParameter(1, Types.ARRAY);
-cs.setBigDecimal(2, BigDecimal.valueOf(1));
+cs.setString(2, "ape");
 
 cs.execute();
 
