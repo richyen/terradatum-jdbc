@@ -71,15 +71,15 @@ String parentType = (String)subParentObj.getAttributes[1];
 ```java
 DbCallableStatementAdapter cs =
   connectionAdapter.prepareCallAdapter("{? = call some_pkg.get_table_type_by_id(?)}");
-cs.registerArrayOutParameter(1, MyTbl.SQL_TYPE_NAME);
+cs.registerArrayOutParameter(1, ParentTbl.SQL_TYPE_NAME);
 cs.setNumeric(2, 1);
 
 cs.execute();
 
-MyTbl myTbl = cs.getArray(1, MyTbl.class);
-MyObj myObj = myTbl.get(1);
-MyOtherObj myOtherObj = myObj.getBaz();
-String bar = myOtherObj.getBar();
+ParentTbl parentTbl = cs.getArray(1, ParentTbl.class);
+ParentObj parentObj = parentTbl.get(1);
+SubParentObj subParentObj = parentObj.getSubParent();
+String parentType = subParentObj.getParentType();
 ```
 
 PPAS has remarkable feature parity with Oracle at the database level, with support for PG/SQL partitioning language (as opposed to
