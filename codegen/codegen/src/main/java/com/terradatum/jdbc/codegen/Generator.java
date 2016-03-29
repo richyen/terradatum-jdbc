@@ -9,15 +9,12 @@ import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
-
-import static java.lang.System.arraycopy;
-import static java.util.Arrays.asList;
 
 /**
  * @author rbellamy@terradatum.com
@@ -25,53 +22,7 @@ import static java.util.Arrays.asList;
  */
 public class Generator {
 
-  private static final Logger logger = LoggerFactory.getLogger(Generator.class);
-
-  /**
-   * Used for testing - not really viable when runnning in various systems with different paths.
-   * <p>
-   * <b>USE THE MAVEN PLUGIN!!!!</b>
-   *
-   * @param args
-   *          not used
-   */
-  public static void main(String[] args) {
-    try {
-      Properties p = new Properties();
-      p.load(new FileReader(new File("jdbc.properties")));
-      String packageName = "com.terradatum.common.db.model";
-
-      // set the output directory based on input parameters, otherwise current directory
-      String projectBaseDir;
-      if (args.length > 0) {
-        projectBaseDir = args[0];
-      } else {
-        projectBaseDir = ".";
-      }
-
-      // set the search path with the rest of the input parameters, otherwise nothing
-      ArrayList<String> searchPath = null;
-      if (args.length > 1) {
-        String[] searchPathArray = new String[args.length - 2];
-        arraycopy(args, 1, searchPathArray, 0, searchPathArray.length);
-        searchPath = new ArrayList<>(asList(searchPathArray));
-      }
-
-      String outputDirectoryPath = projectBaseDir + "/target/generated-test-sources/jdbc-codegen";
-      String templatesDirectoryPath = projectBaseDir + "/src/main/resources/templates";
-      File objectTemplateFile = new File(templatesDirectoryPath + "/obj.stg");
-      File tableTemplateFile = new File(templatesDirectoryPath + "/tbl.stg");
-      File outputDirectory = new File(outputDirectoryPath);
-
-      execute(new Configuration(p.getProperty("edb.connection-url"), p.getProperty("edb.username"), p.getProperty("edb.password"),
-          packageName, outputDirectory, objectTemplateFile, tableTemplateFile, searchPath, null,
-          "(?i:\n" + "metrics\\.agent_contact_info_obj|\n" + "metrics\\.agent_contact_info_tbl|\n"
-              + "terradatum\\.mls_agent_id_obj|\n" + "terradatum\\.mls_agent_id_tbl|\n" + "terradatum\\.mls_area_type_obj|\n"
-              + "terradatum\\.mls_area_type_tbl|\n" + "terradatum\\.number_tbl|\n" + "terradatum\\.string_tbl|\n" + ")"));
-    } catch (ClassNotFoundException | SQLException | IOException e) {
-      logger.debug(e.getMessage(), e);
-    }
-  }
+  private static final Logger LOGGER = LoggerFactory.getLogger(Generator.class);
 
   private static void createDirIfNotExists(File directory) {
     if (!directory.isDirectory()) {
@@ -81,21 +32,24 @@ public class Generator {
     }
   }
 
-  private static void generate(TypeInfo typeInfo, String packageName, LocalDateTime now, File schemaOutputDirectory,
-      File templateFile) throws IOException {
+  private static void generate(TypeInfo typeInfo,
+                               String packageName,
+                               LocalDateTime now,
+                               File schemaOutputDirectory,
+                               File templateFile) throws IOException {
     File outFile = new File(schemaOutputDirectory.getPath() + File.separatorChar + typeInfo.getClassName() + ".java");
-    logger.debug("Generating '{}'", outFile.toPath());
+    LOGGER.debug("Generating '{}'", outFile.toPath());
     try (FileWriter out = new FileWriter(outFile)) {
       STGroup template = new STGroupFile(templateFile.getPath());
-      logger.debug("Template file '{]'", templateFile.getPath());
+      LOGGER.debug("Template file '{]'", templateFile.getPath());
       ST mainTemplate = template.getInstanceOf("main");
 
-      logger.debug("... to package {} on {} using:\n{}", packageName, now, typeInfo);
+      LOGGER.debug("... to package {} on {} using:\n{}", packageName, now, typeInfo);
       mainTemplate.add("typeInfo", typeInfo);
       mainTemplate.add("package", packageName);
       mainTemplate.add("created", now);
       mainTemplate.write(new AutoIndentWriter(out));
-      logger.debug("Generated '{}'", outFile.toPath());
+      LOGGER.debug("Generated '{}'", outFile.toPath());
     }
   }
 
@@ -105,31 +59,34 @@ public class Generator {
 
     createDirIfNotExists(outputDirectory);
 
-    logger.info("Executing codegen with configuration:\n{}", configuration);
+    LOGGER.info("Executing codegen with configuration:\n{}", configuration);
 
     TypeCollector typeCollector = new TypeCollector(configuration.getUrl(), configuration.getUsername(),
         configuration.getPassword());
     // get the Struct (OBJECT) and Array (TABLE) UDTs
-    List<TypeInfo> metadata = typeCollector.getMetadata(configuration.getSchemas(), configuration.getTypeExcludes(),
-        configuration.getTypeIncludes());
+    List<TypeInfo> metadata =
+        typeCollector.getMetadata(
+            configuration.getSchemas(),
+            configuration.getTypeExcludes(),
+            configuration.getTypeIncludes());
 
-    logger.info("Found #{} total types after excludes and includes.", metadata.size());
+    LOGGER.info("Found #{} total types after excludes and includes.", metadata.size());
 
     File objectTemplateFile = configuration.getObjectTemplateFile();
     File tableTemplateFile = configuration.getTableTemplateFile();
     if (!objectTemplateFile.exists()) {
-      logger.info("Object template file '{}' does not exist, using embedded resource file instead", objectTemplateFile.getPath());
+      LOGGER.info("Object template file '{}' does not exist, using embedded resource file instead", objectTemplateFile.getPath());
       objectTemplateFile = new File(Generator.class.getResource("/templates/obj.stg").getFile());
     }
 
     if (!tableTemplateFile.exists()) {
-      logger.info("Table template file '{}' does not exist, using embedded resource file instead", tableTemplateFile.getPath());
+      LOGGER.info("Table template file '{}' does not exist, using embedded resource file instead", tableTemplateFile.getPath());
       tableTemplateFile = new File(Generator.class.getResource("/templates/tbl.stg").getFile());
     }
 
     // generate the files for each type
     for (TypeInfo typeInfo : metadata) {
-      logger.info("Generating file for '{}'", typeInfo.getTypeName());
+      LOGGER.info("Generating file for '{}'", typeInfo.getTypeName());
       File schemaOutputDirectory = new File(outputDirectory.getPath() + File.separatorChar + typeInfo.getSchemaName());
 
       createDirIfNotExists(schemaOutputDirectory);

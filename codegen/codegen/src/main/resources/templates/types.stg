@@ -20,6 +20,7 @@ javaTypeNameMap ::= [
   "character" : "String",
   "regclass" : "String",
   "bytea" : "byte[]",
+  "blob" : "byte[]",
   "date" : "java.sql.Date",
   "time" : "java.sql.Time",
   "timetz" : "java.sql.Time",

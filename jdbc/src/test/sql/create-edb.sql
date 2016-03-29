@@ -1,0 +1,12 @@
+DROP USER jdbc_test CASCADE;
+CREATE USER jdbc_test IDENTIFIED BY p4ssw0rd;
+
+CREATE OR REPLACE FUNCTION jdbc_test.test_error(message VARCHAR)
+  RETURN INTEGER AS
+  BEGIN
+    RAISE EXCEPTION '%', message
+    USING ERRCODE = 'TERR1';
+    RETURN 0;
+  END;
+/
+COMMIT;

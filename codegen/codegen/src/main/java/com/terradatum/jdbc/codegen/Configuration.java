@@ -17,8 +17,16 @@ public class Configuration {
   private final String typeIncludes;
   private final String typeExcludes;
 
-  public Configuration(String url, String username, String password, String packageName, File outputDirectory,
-      File objectTemplateFile, File tableTemplateFile, List<String> schemas, String typeExcludes, String typeIncludes) {
+  public Configuration(String url,
+                       String username,
+                       String password,
+                       String packageName,
+                       File outputDirectory,
+                       File objectTemplateFile,
+                       File tableTemplateFile,
+                       List<String> schemas,
+                       String typeExcludes,
+                       String typeIncludes) {
     this.url = url;
     this.username = username;
     this.password = password;
@@ -74,8 +82,8 @@ public class Configuration {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this).add("url", url).add("username", username).add("password", "*****")
-        .add("packageName", packageName).add("outputDirectory", outputDirectory).add("objectTemplateFile", objectTemplateFile)
-        .add("tableTemplateFile", tableTemplateFile).add("schemas", schemas).add("typeIncludes", typeIncludes)
-        .add("typeExcludes", typeExcludes).toString();
+                      .add("packageName", packageName).add("outputDirectory", outputDirectory).add("objectTemplateFile", objectTemplateFile)
+                      .add("tableTemplateFile", tableTemplateFile).add("schemas", schemas).add("typeIncludes", typeIncludes)
+                      .add("typeExcludes", typeExcludes).toString();
   }
 }

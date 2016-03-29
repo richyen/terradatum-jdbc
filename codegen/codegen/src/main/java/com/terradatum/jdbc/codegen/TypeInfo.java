@@ -13,6 +13,7 @@ public class TypeInfo {
   private String typeName;
   private String elementTypeName;
   private boolean isElementComposite;
+  private char edbArrayDelimiter;
   private List<AttributeInfo> attributeInfos = new ArrayList<>();
 
   public String getSchemaName() {
@@ -59,10 +60,23 @@ public class TypeInfo {
     this.isElementComposite = elementComposite;
   }
 
+  public char getEdbArrayDelimiter() {
+    return edbArrayDelimiter;
+  }
+
+  public void setEdbArrayDelimiter(char delimiter) {
+    this.edbArrayDelimiter = delimiter;
+  }
+
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("typeName", typeName).add("elementTypeName", elementTypeName)
-        .add("attributeInfos", attributeInfos).add("schemaName", getSchemaName()).add("className", getClassName())
-        .add("elementName", getElementClassName()).add("elementComposite", isElementComposite()).toString();
+    return MoreObjects.toStringHelper(this)
+                      .add("typeName", typeName)
+                      .add("elementTypeName", elementTypeName)
+                      .add("attributeInfos", attributeInfos)
+                      .add("schemaName", getSchemaName())
+                      .add("className", getClassName())
+                      .add("elementName", getElementClassName())
+                      .add("elementComposite", isElementComposite()).toString();
   }
 }

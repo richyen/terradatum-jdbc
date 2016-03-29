@@ -34,8 +34,8 @@ setStructAttribute(attributeInfo, index) ::= <<
 setArrayAttribute(attributeInfo, index) ::= <<
 
 <if(attributeInfo.differentSchema)><attributeInfo.propertyName> = new <package>.<attributeInfo.schemaName>.<attributeInfo.className>();
-<attributeInfo.propertyName>.setArray((Array) attributes[<index>])<else><attributeInfo.propertyName> = new <attributeInfo.className>();
-<attributeInfo.propertyName>.setArray((Array) attributes[<index>])<endif>
+<attributeInfo.propertyName>.setArray(attributes[<index>])<else><attributeInfo.propertyName> = new <attributeInfo.className>();
+<attributeInfo.propertyName>.setArray(attributes[<index>])<endif>
 >>
 
 setAttribute(attributeInfo, index) ::= <<
@@ -127,14 +127,12 @@ public class <typeInfo.className> implements DbStruct {
   /**
    * Required default constructor.
    */
-  @SuppressWarnings("unused")
   public <typeInfo.className>() {
   }
 
-    /**
-     * All-elements, type-safe constructor
-     */
-  @SuppressWarnings("unused")
+  /**
+   * All-elements, type-safe constructor
+   */
   public <typeInfo.className>(<typeInfo.attributeInfos:parameters(); separator=", ">) {
     <typeInfo.attributeInfos:{attributeInfo |this.<attributeInfo.propertyName> = <attributeInfo.propertyName>;
     }>

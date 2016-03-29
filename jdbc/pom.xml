@@ -44,12 +44,31 @@
       <artifactId>slf4j-simple</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.ninja-squad</groupId>
+      <artifactId>DbSetup</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-dbcp2</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <testResources>
       <testResource>
         <directory>src/test/resources</directory>
         <filtering>true</filtering>
+      </testResource>
+      <testResource>
+        <directory>src/test/sql</directory>
+        <filtering>true</filtering>
+        <targetPath>${project.build.directory}/generated-sql-scripts</targetPath>
       </testResource>
     </testResources>
     <plugins>
@@ -66,6 +85,16 @@
               <Dependencies>${ojdbc.groupId} exported, ${edb-jdbc.groupId} exported</Dependencies>
             </manifestEntries>
           </archive>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <forkedProcessTimeoutInSeconds>10</forkedProcessTimeoutInSeconds>
+          <systemProperties>
+            <java.util.logging.config.file>src/test/resources/logging.properties</java.util.logging.config.file>
+            <oracle.jdbc.Trace>true</oracle.jdbc.Trace>
+          </systemProperties>
         </configuration>
       </plugin>
     </plugins>

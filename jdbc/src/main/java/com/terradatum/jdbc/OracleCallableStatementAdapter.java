@@ -33,33 +33,21 @@ public class OracleCallableStatementAdapter extends JdbcCallableStatementAdapter
     return connectionAdapter;
   }
 
+  @Override
   public <S extends DbStruct> S getStruct(int index, Class<? extends DbStruct> type) throws SQLException, IllegalAccessException,
       InstantiationException, NoSuchFieldException, InvocationTargetException, NoSuchMethodException {
     STRUCT struct = (STRUCT) delegate().getObject(index);
 
-    // noinspection unchecked
-    S dbStruct = (S) type.newInstance();
-    dbStruct.setAttributes(struct.getAttributes());
-
-    return dbStruct;
+    return getStruct(type, struct.getAttributes());
   }
 
-  public <A extends JdbcArrayList<?>> A getArray(int index, Class<? extends JdbcArrayList<?>> type) throws SQLException,
+  @Override
+  @SuppressWarnings("unchecked")
+  public <A extends DbArray<?>> A getArray(int index, Class<? extends DbArray<?>> type) throws SQLException,
       IllegalAccessException, InstantiationException, NoSuchMethodException, NoSuchFieldException, InvocationTargetException {
     ARRAY array = (ARRAY) delegate().getObject(index);
 
-    // noinspection unchecked
-    A jdbcArrayList = (A) type.newInstance();
-    for (Object element : (Object[]) array.getArray()) {
-      if (element instanceof STRUCT) {
-        STRUCT struct = (STRUCT) element;
-        ((StructArrayList<?>) jdbcArrayList).add(struct);
-      } else {
-        jdbcArrayList.addObject(jdbcArrayList.getTypeToken().getRawType().cast(element));
-      }
-    }
-
-    return jdbcArrayList;
+    return getArray(type, (Object[]) array.getArray());
   }
 
   @Override
@@ -70,7 +58,7 @@ public class OracleCallableStatementAdapter extends JdbcCallableStatementAdapter
   }
 
   @Override
-  public <A> void setArray(int index, JdbcArrayList<A> array) throws SQLException {
+  public <A> void setArray(int index, DbArray<A> array) throws SQLException {
     ARRAY newArray = (ARRAY) getConnectionAdapter().createArrayOf(array.getSQLTypeName().toUpperCase(), array.toArray());
     delegate().setARRAY(index, newArray);
   }

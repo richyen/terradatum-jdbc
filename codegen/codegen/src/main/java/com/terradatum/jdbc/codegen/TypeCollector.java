@@ -23,8 +23,16 @@ public class TypeCollector {
   private final List<String> strings = Lists.newArrayList("varchar", "bpchar", "cstring", "name", "text", "regclass");
   private Connection connection = null;
 
+  /**
+   * The class that is responsible for collecting the various type definitions from PPAS.
+   *
+   * @param url      the JDBC url
+   * @param username the JDBC username
+   * @param password the JDBC password
+   * @throws ClassNotFoundException
+   * @throws SQLException
+   */
   public TypeCollector(String url, String username, String password) throws ClassNotFoundException, SQLException {
-    Class.forName("oracle.jdbc.driver.OracleDriver");
     Class.forName("com.edb.Driver");
     connection = DriverManager.getConnection(url, username, password);
   }
@@ -36,7 +44,6 @@ public class TypeCollector {
   }
 
   public List<TypeInfo> getMetadata(List<String> schemas, String typeExcludes, String typeIncludes) throws SQLException {
-
     final List<TypeInfo> typeInfos = new ArrayList<>();
     Pattern excludesPattern = null;
     Pattern includesPattern = null;
@@ -49,19 +56,28 @@ public class TypeCollector {
       includesPattern = compile(typeIncludes, COMMENTS);
     }
 
-    String getTypesCommandString = "SELECT t.typrelid, format_type(t.oid, NULL) AS alias,\n"
-        + "pg_get_userbyid(t.typowner) AS typeowner, e.typname AS element\n" + "  FROM pg_type t\n"
-        + "  JOIN pg_namespace n ON t.typnamespace = n.oid\n" + "  LEFT OUTER JOIN pg_type e ON e.oid=t.typelem\n"
-        + "  LEFT OUTER JOIN pg_class ct ON ct.oid=t.typrelid AND ct.relkind <> 'c'\n"
-        + "  LEFT OUTER JOIN pg_description des ON (des.objoid=t.oid AND des.classoid='pg_type'::REGCLASS)\n"
-        + " WHERE t.typtype != 'd' AND t.typname NOT LIKE E'\\\\_%' AND n.nspname IN (SELECT * FROM unnest(?))\n"
-        + "   AND ct.oid IS NULL\n" + " ORDER BY n.nspname, t.typname;";
+    String getTypesCommandString = "SELECT t.typrelid, format_type(t.oid, NULL) AS alias,\n" +
+        "pg_get_userbyid(t.typowner) AS typeowner, e.typname AS element\n, e.typdelim" +
+        "  FROM pg_type t\n" +
+        "  JOIN pg_namespace n ON t.typnamespace = n.oid\n" +
+        "  LEFT OUTER JOIN pg_type e ON e.oid=t.typelem\n" +
+        "  LEFT OUTER JOIN pg_class ct ON ct.oid=t.typrelid AND ct.relkind <> 'c'\n" +
+        "  LEFT OUTER JOIN pg_description des ON (des.objoid=t.oid AND des.classoid='pg_type'::REGCLASS)\n" +
+        " WHERE t.typtype != 'd' AND t.typname NOT LIKE E'\\\\_%' AND n.nspname = ANY(?)\n" +
+        "   AND ct.oid IS NULL\n" +
+        " ORDER BY n.nspname, t.typname;";
 
-    String getAttributesCommandString = "SELECT attname,\n" + "       nsp.nspname,\n" + "       t.typname,\n"
-        + "       t.typinput\n" + "FROM pg_attribute att\n" + "JOIN pg_type t ON t.oid=atttypid\n"
-        + "JOIN pg_namespace nsp ON t.typnamespace=nsp.oid\n" + "LEFT OUTER JOIN pg_type b ON t.typelem=b.oid\n"
-        + "LEFT OUTER JOIN pg_collation c ON att.attcollation=c.oid\n"
-        + "LEFT OUTER JOIN pg_namespace nspc ON c.collnamespace=nspc.oid\n" + "WHERE att.attrelid=?\n" + "ORDER BY attnum";
+    String getAttributesCommandString = "SELECT attname,\n" +
+        "       nsp.nspname,\n" +
+        "       t.typname,\n" +
+        "       t.typinput\n" +
+        "FROM pg_attribute att\n" + "JOIN pg_type t ON t.oid=atttypid\n" +
+        "JOIN pg_namespace nsp ON t.typnamespace=nsp.oid\n" +
+        "LEFT OUTER JOIN pg_type b ON t.typelem=b.oid\n" +
+        "LEFT OUTER JOIN pg_collation c ON att.attcollation=c.oid\n" +
+        "LEFT OUTER JOIN pg_namespace nspc ON c.collnamespace=nspc.oid\n" +
+        "WHERE att.attrelid=?\n" +
+        "ORDER BY attnum";
 
     //https://terradatum.atlassian.net/browse/PPAS-3651?focusedCommentId=67770&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-67770
     logger.debug("Resetting the search_path to ensure properly qualified names");
@@ -84,6 +100,10 @@ public class TypeCollector {
         String alias = typeResultSet.getString("alias");
         String element = typeResultSet.getString("element");
         int typrelid = typeResultSet.getInt("typrelid");
+        if (typrelid == 0) {
+          String typdelim = typeResultSet.getString("typdelim");
+          typeInfo.setEdbArrayDelimiter(typdelim.charAt(0));
+        }
 
         if ((excludesPattern != null && excludesPattern.matcher(alias).matches())
             || (includesPattern != null && !includesPattern.matcher(alias).matches())) {

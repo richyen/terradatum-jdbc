@@ -22,12 +22,14 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <!-- dependency versions -->
-    <edb-jdbc.version>9.4.1201</edb-jdbc.version>
+    <edb-jdbc.version>9.4.1201.2</edb-jdbc.version>
     <ojdbc.version>11.2.0.3.0-1</ojdbc.version>
     <jetbrains-annotations.version>15.0</jetbrains-annotations.version>
     <guava.version>19.0</guava.version>
     <st4.version>4.0.8</st4.version>
     <junit.version>4.11</junit.version>
+    <dbsetup.version>1.6.0</dbsetup.version>
+    <commons-dbcp2.version>2.1.1</commons-dbcp2.version>
 
     <!-- ORACLE -->
     <oracle.class-name>${ojdbc.driver-class-name}</oracle.class-name>
@@ -75,6 +77,18 @@
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.ninja-squad</groupId>
+        <artifactId>DbSetup</artifactId>
+        <version>${dbsetup.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-dbcp2</artifactId>
+        <version>${commons-dbcp2.version}</version>
         <scope>test</scope>
       </dependency>
       <!-- server dependencies -->
