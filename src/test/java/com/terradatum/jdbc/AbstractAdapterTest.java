@@ -1,12 +1,15 @@
 package com.terradatum.jdbc;
 
-import com.edb.jdbc4.Jdbc4Connection;
-import oracle.jdbc.driver.OracleConnection;
-import org.junit.Before;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSourceFactory;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.DriverManager;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -14,37 +17,64 @@ import java.util.Properties;
  * @author rbellamy@terradatum.com
  * @date 1/26/16
  */
+@SuppressWarnings("Duplicates")
 public class AbstractAdapterTest {
-  protected final String searchPath = "'metrics','terradatum'";
-  private OracleConnection oracleConnection;
-  private Jdbc4Connection edbConnection;
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractAdapterTest.class);
+  protected static final DataSource ORACLE_DATA_SOURCE = createOracleDataSource();
+  protected static final DataSource EDB_DATA_SOURCE = createEdbDataSource();
+  protected final String searchPath = "'jdbc_test'";
 
-  @Before
-  public void setUp() throws ClassNotFoundException, SQLException, IOException {
+  private static DataSource createOracleDataSource() {
+    try {
+      // TODO: Why the hell do we need to set these here? They should be picked up by the IntelliJ Surefire support.
+      // https://youtrack.jetbrains.com/issue/IDEA-101185
+      // https://youtrack.jetbrains.com/issue/IDEA-123453
+      //System.setProperty("java.util.logging.config.file", "src/test/resources/logging.properties");
+      //System.setProperty("oracle.jdbc.Trace", Boolean.TRUE.toString());
+      return BasicDataSourceFactory.createDataSource(getProperties("oracle"));
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e);
+      return null;
+    }
+  }
+
+  private static DataSource createEdbDataSource() {
+    try {
+      BasicDataSource basicDataSource = BasicDataSourceFactory.createDataSource(getProperties("edb"));
+      basicDataSource.setConnectionProperties("loglevel=2");
+      return basicDataSource;
+    } catch (Exception e) {
+      LOGGER.error(e.getMessage(), e);
+      return null;
+    }
+  }
+
+  @NotNull
+  private static Properties getProperties(String vendor) throws IOException {
     Properties p = new Properties();
-    InputStream is = ClassLoader.getSystemResourceAsStream("jdbc.properties");
+    InputStream is = ClassLoader.getSystemResourceAsStream(vendor + ".properties");
     p.load(is);
-    Class.forName(p.getProperty("oracle.class-name"));
-    Class.forName(p.getProperty("edb.class-name"));
-    setOracleConnection((OracleConnection) DriverManager.getConnection(p.getProperty("oracle.connection-url"),
-        p.getProperty("oracle.username"), p.getProperty("oracle.password")));
-    setEdbConnection((Jdbc4Connection) DriverManager.getConnection(p.getProperty("edb.connection-url"),
-        p.getProperty("edb.username"), p.getProperty("edb.password")));
+    return p;
   }
 
-  public OracleConnection getOracleConnection() {
-    return oracleConnection;
+  public OracleConnectionAdapter getOracleConnectionAdapter() throws SQLException {
+    assert ORACLE_DATA_SOURCE != null;
+    return (OracleConnectionAdapter)JdbcConnectionAdapterFactory.create(getOracleConnection());
   }
 
-  public void setOracleConnection(OracleConnection oracleConnection) {
-    this.oracleConnection = oracleConnection;
+  public Connection getOracleConnection() throws SQLException {
+    assert ORACLE_DATA_SOURCE != null;
+    return ORACLE_DATA_SOURCE.getConnection();
   }
 
-  public Jdbc4Connection getEdbConnection() {
-    return edbConnection;
+  public EdbConnectionAdapter getEdbConnectionAdapter(String searchPath) throws SQLException {
+    assert EDB_DATA_SOURCE != null;
+    return (EdbConnectionAdapter)JdbcConnectionAdapterFactory.create(getEdbConnection(), searchPath);
   }
 
-  public void setEdbConnection(Jdbc4Connection edbConnection) {
-    this.edbConnection = edbConnection;
+  public Connection getEdbConnection() throws SQLException {
+    assert EDB_DATA_SOURCE != null;
+    return EDB_DATA_SOURCE.getConnection();
   }
+
 }

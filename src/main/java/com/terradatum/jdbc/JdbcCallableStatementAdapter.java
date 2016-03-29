@@ -1,7 +1,10 @@
 package com.terradatum.jdbc;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.InputStream;
 import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
@@ -2784,5 +2787,53 @@ public abstract class JdbcCallableStatementAdapter extends JdbcPreparedStatement
   @Override
   public void registerOutParameter(String parameterName, SQLType sqlType, String typeName) throws SQLException {
     delegate().registerOutParameter(parameterName, sqlType, typeName);
+  }
+
+  @NotNull
+  @SuppressWarnings("unchecked")
+  public <S extends DbStruct> S getStruct(Class<? extends DbStruct> type, Object[] attributes) throws SQLException, IllegalAccessException,
+      InstantiationException, NoSuchFieldException, InvocationTargetException, NoSuchMethodException {
+
+    S dbStruct = (S) type.newInstance();
+
+    dbStruct.setAttributes(attributes);
+
+    return dbStruct;
+  }
+
+  /**
+   * This method relies on the fact that the {@link DbArray} hierarchy has a total of two constructors:
+   * <ol>
+   *   <il>The default constructor - used only by {@link JdbcArrayList}</il>
+   *   <il>A constructor that accepts a {@link DbConnectionAdapter} - used only by {@link StructArrayList}</il>
+   * </ol>
+   * @param type the specific class of the {@link DbArray}
+   * @param elements the elements of the array
+   * @param <A> the array type to return
+   * @return the type-safe array
+   * @throws InstantiationException
+   * @throws IllegalAccessException
+   * @throws InvocationTargetException
+   * @throws SQLException
+   * @throws NoSuchMethodException
+   * @throws NoSuchFieldException
+   */
+  @NotNull
+  @SuppressWarnings("unchecked")
+  protected <A extends DbArray<?>> A getArray(Class<? extends DbArray<?>> type, Object[] elements) throws InstantiationException,
+      IllegalAccessException, InvocationTargetException, SQLException, NoSuchMethodException,
+      NoSuchFieldException {
+
+    A jdbcArrayList = (A) type.newInstance();
+
+    for (Object element : elements) {
+      if (element instanceof Struct) {
+        Struct struct = (Struct) element;
+        ((StructArrayList<?>) jdbcArrayList).add(struct);
+      } else {
+        jdbcArrayList.addObject(jdbcArrayList.getTypeToken().getRawType().cast(element));
+      }
+    }
+    return jdbcArrayList;
   }
 }

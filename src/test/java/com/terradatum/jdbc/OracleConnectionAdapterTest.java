@@ -28,29 +28,29 @@ public class OracleConnectionAdapterTest extends AbstractAdapterTest {
   @Test
   public void canCreateOracleStruct() throws Exception {
     try (DbConnectionAdapter dbConnectionAdapter = JdbcConnectionAdapterFactory.create(getOracleConnection())) {
-      Object[] attributes = {"ABC123", new BigDecimal(1)};
-      Struct agentIdStruct = dbConnectionAdapter.createStruct("metrics.agent_id_obj", attributes);
-      Assert.assertTrue("Not an Oracle STRUCT", oracle.sql.STRUCT.class.isAssignableFrom(agentIdStruct.getClass()));
+      Object[] attributes = {new BigDecimal(1), "ABC123"};
+      Struct childStruct = dbConnectionAdapter.createStruct("jdbc_test.child_obj", attributes);
+      Assert.assertTrue("Not an Oracle STRUCT", oracle.sql.STRUCT.class.isAssignableFrom(childStruct.getClass()));
       // NOTE: Oracle uses uppercase SQL type names
-      Assert.assertEquals("Invalid SqlTypeName", "METRICS.AGENT_ID_OBJ", agentIdStruct.getSQLTypeName());
-      Assert.assertArrayEquals("Invalid attributes", attributes, agentIdStruct.getAttributes());
+      Assert.assertEquals("Invalid SqlTypeName", "JDBC_TEST.CHILD_OBJ", childStruct.getSQLTypeName());
+      Assert.assertArrayEquals("Invalid attributes", attributes, childStruct.getAttributes());
     }
   }
 
   @Test
   public void canCreateOracleArray() throws Exception {
     try (DbConnectionAdapter dbConnectionAdapter = JdbcConnectionAdapterFactory.create(getOracleConnection())) {
-      Object[] attributes1 = {"ABC123", new BigDecimal(1)};
-      Object[] attributes2 = {"456DEF", new BigDecimal(2)};
-      Struct agentIdStruct1 = dbConnectionAdapter.createStruct("metrics.agent_id_obj", attributes1);
-      Struct agentIdStruct2 = dbConnectionAdapter.createStruct("metrics.agent_id_obj", attributes2);
-      Struct[] elements = {agentIdStruct1, agentIdStruct2};
-      Array agentIdArray = dbConnectionAdapter.createArrayOf("metrics.agent_id_tbl", elements);
-      Assert.assertTrue("Not an Oracle ARRAY", oracle.sql.ARRAY.class.isAssignableFrom(agentIdArray.getClass()));
+      Object[] attributes1 = {new BigDecimal(1), "ABC123"};
+      Object[] attributes2 = {new BigDecimal(2), "456DEF"};
+      Struct childStruct1 = dbConnectionAdapter.createStruct("jdbc_test.child_obj", attributes1);
+      Struct childStruct2 = dbConnectionAdapter.createStruct("jdbc_test.child_obj", attributes2);
+      Struct[] elements = {childStruct1, childStruct2};
+      Array idArray = dbConnectionAdapter.createArrayOf("jdbc_test.child_tbl", elements);
+      Assert.assertTrue("Not an Oracle ARRAY", oracle.sql.ARRAY.class.isAssignableFrom(idArray.getClass()));
       // NOTE: Oracle uses uppercase SQL type names
-      Assert.assertEquals("Invalid SqlTypeName", "METRICS.AGENT_ID_OBJ", agentIdArray.getBaseTypeName());
+      Assert.assertEquals("Invalid SqlTypeName", "JDBC_TEST.CHILD_OBJ", idArray.getBaseTypeName());
       Assert.assertThat("Invalid elements", elements,
-          is(arrayContainingInAnyOrder(equalTo(agentIdStruct1), equalTo(agentIdStruct2))));
+          is(arrayContainingInAnyOrder(equalTo(childStruct1), equalTo(childStruct2))));
     }
   }
 

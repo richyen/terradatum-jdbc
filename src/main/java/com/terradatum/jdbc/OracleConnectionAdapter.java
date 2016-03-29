@@ -15,7 +15,7 @@ import java.util.Set;
  * @author rbellamy@terradatum.com
  * @date 1/30/16
  */
-class OracleConnectionAdapter extends JdbcConnectionAdapter implements DbConnectionAdapter {
+public class OracleConnectionAdapter extends JdbcConnectionAdapter implements DbConnectionAdapter {
 
   private final OracleConnection delegate;
 

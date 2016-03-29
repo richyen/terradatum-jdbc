@@ -12,12 +12,12 @@ import java.util.Set;
  * @author rbellamy@terradatum.com
  * @date 2/18/16
  */
-public class SQLExceptionTest extends AbstractAdapterTest {
+public class SQLExceptionTest extends AbstractDbTest {
 
   protected DbConnectionAdapter dbConnectionAdapter;
 
   public void throwSqlException(Connection connection, String searchPath) throws SQLException {
-    String commandText = "{? = call metrics.test_error(?)}";
+    String commandText = "{? = call jdbc_test.test_error(?)}";
     Set<SqlError> sqlErrors = new HashSet<>();
     sqlErrors.add(new SqlError(20000, "TERR1"));
     dbConnectionAdapter = JdbcConnectionAdapterFactory.create(connection, sqlErrors, searchPath);

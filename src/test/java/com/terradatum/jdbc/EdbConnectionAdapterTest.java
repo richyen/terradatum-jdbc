@@ -25,29 +25,29 @@ public class EdbConnectionAdapterTest extends AbstractAdapterTest {
   @Test
   public void canCreateEdbStruct() throws Exception {
     try (DbConnectionAdapter dbConnectionAdapter = JdbcConnectionAdapterFactory.create(getEdbConnection(), searchPath)) {
-      Object[] attributes = { "ABC123", new BigDecimal(1) };
-      Struct agentIdStruct = dbConnectionAdapter.createStruct("metrics.agent_id_obj", attributes);
-      Assert.assertTrue("Not an Java Sql Struct", Struct.class.isAssignableFrom(agentIdStruct.getClass()));
+      Object[] attributes = { new BigDecimal(1), "ABC123" };
+      Struct childStruct = dbConnectionAdapter.createStruct("jdbc_test.child_obj", attributes);
+      Assert.assertTrue("Not an Java Sql Struct", Struct.class.isAssignableFrom(childStruct.getClass()));
       // NOTE: EDB uses unqualified type names
-      Assert.assertEquals("Invalid SqlTypeName", "agent_id_obj", agentIdStruct.getSQLTypeName());
-      Assert.assertArrayEquals("Invalid attributes", attributes, agentIdStruct.getAttributes());
+      Assert.assertEquals("Invalid SqlTypeName", "child_obj", childStruct.getSQLTypeName());
+      Assert.assertArrayEquals("Invalid attributes", attributes, childStruct.getAttributes());
     }
   }
 
   @Test
   public void canCreateEdbArray() throws Exception {
     try (DbConnectionAdapter dbConnectionAdapter = JdbcConnectionAdapterFactory.create(getEdbConnection(), searchPath)) {
-      Object[] attributes1 = { "ABC123", new BigDecimal(1) };
-      Object[] attributes2 = { "456DEF", new BigDecimal(2) };
-      Struct agentIdStruct1 = dbConnectionAdapter.createStruct("metrics.agent_id_obj", attributes1);
-      Struct agentIdStruct2 = dbConnectionAdapter.createStruct("metrics.agent_id_obj", attributes2);
-      Struct[] elements = { agentIdStruct1, agentIdStruct2 };
-      Array agentIdArray = dbConnectionAdapter.createArrayOf("metrics.agent_id_tbl", elements);
-      Assert.assertTrue("Not a Java Sql Array", Array.class.isAssignableFrom(agentIdArray.getClass()));
+      Object[] attributes1 = { new BigDecimal(1), "ABC123" };
+      Object[] attributes2 = { new BigDecimal(2), "456DEF" };
+      Struct childStruct1 = dbConnectionAdapter.createStruct("jdbc_test.child_obj", attributes1);
+      Struct childStruct2 = dbConnectionAdapter.createStruct("jdbc_test.child_obj", attributes2);
+      Struct[] elements = { childStruct1, childStruct2 };
+      Array idArray = dbConnectionAdapter.createArrayOf("jdbc_test.child_tbl", elements);
+      Assert.assertTrue("Not a Java Sql Array", Array.class.isAssignableFrom(idArray.getClass()));
       // NOTE: EDB uses unqualified type names
-      Assert.assertEquals("Invalid SqlTypeName", "agent_id_tbl", agentIdArray.getBaseTypeName());
+      Assert.assertEquals("Invalid SqlTypeName", "child_obj", idArray.getBaseTypeName());
       Assert.assertThat("Invalid elements", elements,
-          is(arrayContainingInAnyOrder(equalTo(agentIdStruct1), equalTo(agentIdStruct2))));
+          is(arrayContainingInAnyOrder(equalTo(childStruct1), equalTo(childStruct2))));
     }
   }
 }

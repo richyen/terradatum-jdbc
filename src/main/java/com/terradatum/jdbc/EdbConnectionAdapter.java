@@ -11,7 +11,7 @@ import java.util.Set;
  * @author rbellamy@terradatum.com
  * @date 1/30/16
  */
-class EdbConnectionAdapter extends JdbcConnectionAdapter implements DbConnectionAdapter {
+public class EdbConnectionAdapter extends JdbcConnectionAdapter implements DbConnectionAdapter {
 
   private final Jdbc4Connection delegate;
 
@@ -134,7 +134,7 @@ class EdbConnectionAdapter extends JdbcConnectionAdapter implements DbConnection
     return ret;
   }
 
-  interface EdbSearchPathCreator<T> {
+  private interface EdbSearchPathCreator<T> {
     T create(String typeName, Object[] objects) throws SQLException;
   }
 }
