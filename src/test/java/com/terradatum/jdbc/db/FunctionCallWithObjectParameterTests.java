@@ -59,6 +59,29 @@ public class FunctionCallWithObjectParameterTests extends AbstractDbTest {
     return ret.intValue();
   }
 
+  /**
+   * <code>
+   *   <pre>
+   *     SET SEARCH_PATH TO 'jdbc_test';
+   *
+   *     DECLARE
+   *       r_parent jdbc_test.parent_obj;
+   *       v_ret INTEGER;
+   *     BEGIN
+   *
+   *     r_parent := jdbc_test.parent_obj(1, 'Caesar', null, null, null, null, null);
+   *
+   *     v_ret := parent_child_pkg.get_child_count_by_parent_obj(r_parent);
+   *
+   *     DBMS_OUTPUT.PUT_LINE('v_ret: ' || v_ret);
+   *
+   *     END;
+   *   </pre>
+   * </code>
+   * @param connection the JDBC Connection - either Oracle or EDB
+   * @return the count of children for that parent_obj
+   * @throws SQLException
+   */
   public int getChildCountByParentUsingDirectJdbc(Connection connection) throws SQLException {
     String commandText = "{? = call parent_child_pkg.get_child_count_by_parent_obj(?)}";
     String typeName;
