@@ -8,47 +8,63 @@ Oracle?
 
 Given an object `TABLE` type composed of the following:
 ```sql
-CREATE TYPE my_obj AS OBJECT (
-  foo varchar(10),
-  baz my_other_obj
+CREATE OR REPLACE TYPE JDBC_TEST.CHILD_OBJ AS OBJECT
+(
+  CHILD_ID   NUMBER,
+  CHILD_NAME VARCHAR(20)
 );
 
-CREATE TYPE my_other_obj AS OBJECT (
-  bar varchar(10)
+CREATE OR REPLACE TYPE JDBC_TEST.CHILD_TBL AS TABLE OF JDBC_TEST.CHILD_OBJ;
+
+CREATE OR REPLACE TYPE JDBC_TEST.SUB_PARENT_OBJ AS OBJECT
+(
+  SUB_PARENT_ID NUMBER,
+  PARENT_TYPE   VARCHAR(20)
 );
 
-CREATE TYPE my_tbl IS TABLE OF my_obj;
+CREATE OR REPLACE TYPE JDBC_TEST.PARENT_OBJ AS OBJECT
+(
+  PARENT_ID      NUMBER,
+  PARENT_NAME    VARCHAR(20),
+  SUB_PARENT     JDBC_TEST.SUB_PARENT_OBJ,
+  SOME_DATE      DATE,
+  SOME_TIMESTAMP TIMESTAMP,
+  IMAGE          BLOB,
+  CHILDREN       JDBC_TEST.CHILD_TBL
+);
+
+CREATE OR REPLACE TYPE JDBC_TEST.PARENT_TBL AS TABLE OF JDBC_TEST.PARENT_OBJ;
 ```
 
 **Oracle:**
 ```java
 OracleCallableStatement cs =
-  connection.prepareCall("{? = call some_pkg.get_table_type_by_id(?)}");
-cs.registerOutParameter(1, MyTbl._SQL_TYPECODE, MyTbl._SQL_NAME);
-cs.setNUMBER(2, new NUMBER(1));
+  connection.prepareCall("{? = call parent_child_pkg.get_parents_by_type(?)}");
+cs.registerOutParameter(1, ChildTbl._SQL_TYPECODE, ChildTbl._SQL_NAME);
+cs.setString(2, "ape");
 
 cs.execute();
 
-MyTbl myTbl = (MyTbl)cs.getORAData(1, MyTbl.getORADataFactory();
-MyObj myObj = myTbl.get(1);
-MyOtherObj myOtherObj = myObj.getBaz();
-String bar = myOtherObj.getBar();
+ParentTbl parentTbl = (ParentTbl)cs.getORAData(1, ParentTbl.getORADataFactory();
+ParentObj ParentObj = parentTbl.get(1);
+SubParentObj subParentObj = parentObj.getSubParent();
+String parentType = subParentObj.getParentType();
 ```
 
 **EDB:**
 ```java
 CallableStatement cs =
-  connection.prepareCall("{? = call some_pkg.get_table_type_by_id(?)}");
+  connection.prepareCall("{? = call parent_child_pkg.get_parents_by_type(?)}");
 cs.registerOutParameter(1, Types.ARRAY);
 cs.setBigDecimal(2, BigDecimal.valueOf(1));
 
 cs.execute();
 
-Array myTblArray = cs.getArray(1)
-Struct[] myTbl = (Struct[])myTblArray.getArray();
-Struct myObj = myTbl[0];
-Struct myOtherObj = (Struct)myObj.getAttributes[1];
-String bar = (String)myOtherObj.getAttributes[0];
+Array parentTblArray = cs.getArray(1)
+Struct[] parentTbl = (Struct[])parentTblArray.getArray();
+Struct parentObj = parentTbl[0];
+Struct subParentObj = (Struct)parentObj.getAttributes[2];
+String parentType = (String)subParentObj.getAttributes[1];
 ```
 
 **Terradatum JDBC for Oracle and EDB:**
