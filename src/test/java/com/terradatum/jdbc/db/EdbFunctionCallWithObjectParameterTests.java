@@ -51,7 +51,14 @@ public class EdbFunctionCallWithObjectParameterTests extends FunctionCallWithObj
   @Test
   public void canGetChildCountByParentUsingDirectJdbc() throws SQLException {
     dbSetupTracker.skipNextLaunch();
-    int childCountByParent = getChildCountByParentUsingDirectJdbc(getEdbConnection());
+    int childCountByParent = getChildCountByParentUsingDirectJdbcCallableStatement(getEdbConnection());
+    Assert.assertEquals("Caesar has the wrong number of children", 3, childCountByParent);
+  }
+
+  @Test
+  public void canGetChildCountByParentUsingDirectJdbcPreparedStatement() throws SQLException {
+    dbSetupTracker.skipNextLaunch();
+    int childCountByParent = getChildCountByParentUsingDirectJdbcPreparedStatement(getEdbConnection());
     Assert.assertEquals("Caesar has the wrong number of children", 3, childCountByParent);
   }
 }

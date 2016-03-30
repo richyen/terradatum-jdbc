@@ -82,7 +82,7 @@ public class FunctionCallWithObjectParameterTests extends AbstractDbTest {
    * @return the count of children for that parent_obj
    * @throws SQLException
    */
-  public int getChildCountByParentUsingDirectJdbc(Connection connection) throws SQLException {
+  public int getChildCountByParentUsingDirectJdbcCallableStatement(Connection connection) throws SQLException {
     String commandText = "{? = call parent_child_pkg.get_child_count_by_parent_obj(?)}";
     String typeName;
     if (OracleConnection.class.isAssignableFrom(connection.getClass()) ||
@@ -100,6 +100,25 @@ public class FunctionCallWithObjectParameterTests extends AbstractDbTest {
     callableStatement.setObject(2, parent);
     callableStatement.execute();
     BigDecimal ret = callableStatement.getBigDecimal(1);
+    return ret.intValue();
+  }
+
+  public int getChildCountByParentUsingDirectJdbcPreparedStatement(Connection connection) throws SQLException {
+    String commandText = "SELECT parent_child_pkg.get_child_count_by_parent_obj(?)";
+    String typeName;
+    if (OracleConnection.class.isAssignableFrom(connection.getClass()) ||
+        connection.isWrapperFor(OracleConnection.class)) {
+      typeName = "JDBC_TEST.PARENT_OBJ";
+    } else {
+      typeName = "parent_obj";
+    }
+    Struct parent = connection.createStruct(typeName, new Object[]{
+        BigDecimal.ONE, "Caesar", null, null, null, null, null
+    });
+    PreparedStatement preparedStatement = connection.prepareStatement(commandText);
+
+    preparedStatement.setObject(1, parent);
+    BigDecimal ret = (BigDecimal)preparedStatement.executeQuery();
     return ret.intValue();
   }
 }
