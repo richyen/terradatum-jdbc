@@ -49,9 +49,16 @@ public class OracleFunctionCallWithObjectParameterTests extends FunctionCallWith
   }
 
   @Test
-  public void canGetChildCountByParentUsingDirectJdbc() throws SQLException {
+  public void canGetChildCountByParentUsingDirectJdbcCallableStatement() throws SQLException {
     dbSetupTracker.skipNextLaunch();
-    int childCountByParent = getChildCountByParentUsingDirectJdbc(getOracleConnection());
+    int childCountByParent = getChildCountByParentUsingDirectJdbcCallableStatement(getOracleConnection());
+    Assert.assertEquals("Caesar has the wrong number of children", 3, childCountByParent);
+  }
+
+  @Test
+  public void canGetChildCountByParentUsingDirectJdbcPreparedStatement() throws SQLException {
+    dbSetupTracker.skipNextLaunch();
+    int childCountByParent = getChildCountByParentUsingDirectJdbcPreparedStatement(getOracleConnection());
     Assert.assertEquals("Caesar has the wrong number of children", 3, childCountByParent);
   }
 }
