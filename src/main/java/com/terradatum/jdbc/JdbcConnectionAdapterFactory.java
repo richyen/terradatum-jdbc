@@ -1,6 +1,6 @@
 package com.terradatum.jdbc;
 
-import com.edb.jdbc4.Jdbc4Connection;
+import com.edb.jdbc.PgConnection;
 import oracle.jdbc.OracleConnection;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,20 +28,20 @@ public class JdbcConnectionAdapterFactory {
 
   public static @NotNull DbConnectionAdapter create(Connection connection, Set<SqlError> sqlErrors, String searchPath) throws SQLException {
     Class<OracleConnection> oracleConnectionClass = OracleConnection.class;
-    Class<Jdbc4Connection> jdbc4ConnectionClass = Jdbc4Connection.class;
+    Class<PgConnection> pgConnectionClass = PgConnection.class;
     Class<? extends Connection> connectionClass = connection.getClass();
 
     if (oracleConnectionClass.isAssignableFrom(connectionClass)) {
       return getOracleConnectionAdapter((OracleConnection) connection, sqlErrors);
-    } else if (jdbc4ConnectionClass.isAssignableFrom(connectionClass)) {
-      return getEdbConnectionAdapter((Jdbc4Connection) connection, sqlErrors, searchPath);
+    } else if (pgConnectionClass.isAssignableFrom(connectionClass)) {
+      return getEdbConnectionAdapter((PgConnection) connection, sqlErrors, searchPath);
     }
 
     try {
       if (connection.isWrapperFor(OracleConnection.class)) {
         return getOracleConnectionAdapter(connection.unwrap(OracleConnection.class), sqlErrors);
-      } else if (connection.isWrapperFor(Jdbc4Connection.class)) {
-        return getEdbConnectionAdapter(connection.unwrap(Jdbc4Connection.class), sqlErrors, searchPath);
+      } else if (connection.isWrapperFor(PgConnection.class)) {
+        return getEdbConnectionAdapter(connection.unwrap(PgConnection.class), sqlErrors, searchPath);
       }
     } catch (SQLException e) {
       throw new IllegalArgumentException("The Connection of type " + connectionClass.getName() + " has no adapters.", e);
@@ -50,7 +50,7 @@ public class JdbcConnectionAdapterFactory {
     throw new IllegalArgumentException("The Connection of type " + connectionClass.getName() + " has no adapters.");
   }
 
-  private static EdbConnectionAdapter getEdbConnectionAdapter(Jdbc4Connection connection, Set<SqlError> sqlErrors, String searchPath) throws
+  private static EdbConnectionAdapter getEdbConnectionAdapter(PgConnection connection, Set<SqlError> sqlErrors, String searchPath) throws
       SQLException {
     EdbConnectionAdapter edbConnectionAdapter = new EdbConnectionAdapter(connection, sqlErrors);
     if (searchPath != null && !searchPath.equals("")) {

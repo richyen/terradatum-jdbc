@@ -118,7 +118,11 @@ public class FunctionCallWithObjectParameterTests extends AbstractDbTest {
     PreparedStatement preparedStatement = connection.prepareStatement(commandText);
 
     preparedStatement.setObject(1, parent);
-    BigDecimal ret = (BigDecimal)preparedStatement.executeQuery();
+    ResultSet resultSet = preparedStatement.executeQuery();
+    BigDecimal ret = BigDecimal.ZERO;
+    if (resultSet.next()) {
+      ret = resultSet.getBigDecimal(1);
+    }
     return ret.intValue();
   }
 }

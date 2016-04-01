@@ -18,7 +18,7 @@ public class EdbConnectionAdapterTest extends AbstractAdapterTest {
   @Test
   public void edbConnectionAdapterIsSelected() throws Exception {
     try (DbConnectionAdapter dbConnectionAdapter = JdbcConnectionAdapterFactory.create(getEdbConnection(), searchPath)) {
-      Assert.assertTrue("Not a Jdbc4Connection", EdbConnectionAdapter.class.isAssignableFrom(dbConnectionAdapter.getClass()));
+      Assert.assertTrue("Not a PgConnection", EdbConnectionAdapter.class.isAssignableFrom(dbConnectionAdapter.getClass()));
     }
   }
 
