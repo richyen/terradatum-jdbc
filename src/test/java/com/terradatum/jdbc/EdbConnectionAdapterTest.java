@@ -45,7 +45,7 @@ public class EdbConnectionAdapterTest extends AbstractAdapterTest {
       Array idArray = dbConnectionAdapter.createArrayOf("jdbc_test.child_tbl", elements);
       Assert.assertTrue("Not a Java Sql Array", Array.class.isAssignableFrom(idArray.getClass()));
       // NOTE: EDB uses unqualified type names
-      Assert.assertEquals("Invalid SqlTypeName", "child_obj", idArray.getBaseTypeName());
+      Assert.assertEquals("Invalid SqlTypeName", "child_tbl", idArray.getBaseTypeName());
       Assert.assertThat("Invalid elements", elements,
           is(arrayContainingInAnyOrder(equalTo(childStruct1), equalTo(childStruct2))));
     }
