@@ -1,6 +1,6 @@
 package com.terradatum.jdbc;
 
-import com.edb.jdbc4.Jdbc4Connection;
+import com.edb.jdbc.PgConnection;
 import com.google.common.base.Strings;
 
 import java.sql.*;
@@ -13,15 +13,15 @@ import java.util.Set;
  */
 public class EdbConnectionAdapter extends JdbcConnectionAdapter implements DbConnectionAdapter {
 
-  private final Jdbc4Connection delegate;
+  private final PgConnection delegate;
 
-  public EdbConnectionAdapter(Jdbc4Connection connection, Set<SqlError> sqlErrors) throws SQLException {
+  public EdbConnectionAdapter(PgConnection connection, Set<SqlError> sqlErrors) throws SQLException {
     super(sqlErrors);
     this.delegate = connection;
   }
 
   @Override
-  protected Jdbc4Connection delegate() {
+  protected PgConnection delegate() {
     return delegate;
   }
 

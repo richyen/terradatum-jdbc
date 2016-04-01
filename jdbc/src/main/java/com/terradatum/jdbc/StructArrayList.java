@@ -36,7 +36,7 @@ public abstract class StructArrayList<S extends DbStruct> extends JdbcArrayList<
     Object[] elements = buildArrayList(arrayAsString).toArray();
     for (Object element : elements) {
       if (element instanceof String) {
-        List attributes = StructParser.parse((String) element);
+        List attributes = StructParser.parse((String) element, true);
         S dbStruct = getTypeToken().constructor(getTypeToken().getRawType().getConstructor()).invoke(null);
         dbStruct.setAttributes(attributes.toArray());
         add(dbStruct);
