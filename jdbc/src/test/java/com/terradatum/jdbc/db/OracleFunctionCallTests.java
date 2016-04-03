@@ -35,10 +35,24 @@ public class OracleFunctionCallTests extends FunctionCallTests {
   }
 
   @Test
-  public void canGetChildCountByParentId() throws SQLException {
+  public void canGetChildCountAsBigDecimalByParentId() throws SQLException {
     dbSetupTracker.skipNextLaunch();
-    int childCountByParent = getChildCountByParentId(getOracleConnectionAdapter());
+    BigDecimal childCountByParent = getChildCountAsBigDecimalByParentId(getOracleConnectionAdapter());
+    Assert.assertEquals("Caesar has the wrong number of children", new BigDecimal(3), childCountByParent);
+  }
+
+  @Test
+  public void canGetChildCountAsIntegerByParentId() throws SQLException {
+    dbSetupTracker.skipNextLaunch();
+    int childCountByParent = getChildCountAsIntegerByParentId(getOracleConnectionAdapter());
     Assert.assertEquals("Caesar has the wrong number of children", 3, childCountByParent);
+  }
+
+  @Test
+  public void canGetChildCountAsBigDecimalWhenReturnIsIntegerByParentId() throws SQLException {
+    dbSetupTracker.skipNextLaunch();
+    BigDecimal childCountByParent = getChildCountAsBigDecimalWhenReturnIsIntegerByParentId(getOracleConnectionAdapter());
+    Assert.assertEquals("Caesar has the wrong number of children", new BigDecimal(3), childCountByParent);
   }
 
   @Test

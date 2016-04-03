@@ -35,10 +35,24 @@ public class EdbFunctionCallTests extends FunctionCallTests {
   }
 
   @Test
-  public void canGetChildCountByParentId() throws SQLException {
+  public void canGetChildCountAsBigDecimalByParentId() throws SQLException {
     dbSetupTracker.skipNextLaunch();
-    int childCountByParent = getChildCountByParentId(getEdbConnectionAdapter(searchPath));
+    BigDecimal childCountByParent = getChildCountAsBigDecimalByParentId(getEdbConnectionAdapter(searchPath));
+    Assert.assertEquals("Caesar has the wrong number of children", new BigDecimal(3), childCountByParent);
+  }
+
+  @Test
+  public void canGetChildCountAsIntegerByParentId() throws SQLException {
+    dbSetupTracker.skipNextLaunch();
+    int childCountByParent = getChildCountAsIntegerByParentId(getEdbConnectionAdapter(searchPath));
     Assert.assertEquals("Caesar has the wrong number of children", 3, childCountByParent);
+  }
+
+  @Test
+  public void canGetChildCountAsBigDecimalWhenReturnIsIntegerByParentId() throws SQLException {
+    dbSetupTracker.skipNextLaunch();
+    BigDecimal childCountByParent = getChildCountAsBigDecimalWhenReturnIsIntegerByParentId(getEdbConnectionAdapter(searchPath));
+    Assert.assertEquals("Caesar has the wrong number of children", new BigDecimal(3), childCountByParent);
   }
 
   @Test

@@ -17,14 +17,34 @@ import java.sql.*;
  */
 public class FunctionCallTests extends AbstractDbTest {
 
-  public int getChildCountByParentId(DbConnectionAdapter dbConnectionAdapter) throws SQLException {
-    String commandText = "{? = call parent_child_pkg.get_child_count_by_parent(?)}";;
+  public BigDecimal getChildCountAsBigDecimalByParentId(DbConnectionAdapter dbConnectionAdapter) throws SQLException {
+    String commandText = "{? = call parent_child_pkg.get_child_count_by_parent(?)}";
     DbCallableStatementAdapter dbCallableStatementAdapter = dbConnectionAdapter.prepareCallAdapter(commandText);
     dbCallableStatementAdapter.registerOutParameter(1, Types.NUMERIC);
     dbCallableStatementAdapter.setNumeric(2, 1);
     dbCallableStatementAdapter.execute();
     BigDecimal ret = dbCallableStatementAdapter.getBigDecimal(1);
-    return ret.intValue();
+    return ret;
+  }
+
+  public int getChildCountAsIntegerByParentId(DbConnectionAdapter dbConnectionAdapter) throws SQLException {
+    String commandText = "{? = call parent_child_pkg.get_child_count_as_int(?)}";
+    DbCallableStatementAdapter dbCallableStatementAdapter = dbConnectionAdapter.prepareCallAdapter(commandText);
+    dbCallableStatementAdapter.registerOutParameter(1, Types.INTEGER);
+    dbCallableStatementAdapter.setInt(2, 1);
+    dbCallableStatementAdapter.execute();
+    int ret = dbCallableStatementAdapter.getInt(1);
+    return ret;
+  }
+
+  public BigDecimal getChildCountAsBigDecimalWhenReturnIsIntegerByParentId(DbConnectionAdapter dbConnectionAdapter) throws SQLException {
+    String commandText = "{? = call parent_child_pkg.get_child_count_as_int(?)}";
+    DbCallableStatementAdapter dbCallableStatementAdapter = dbConnectionAdapter.prepareCallAdapter(commandText);
+    dbCallableStatementAdapter.registerOutParameter(1, Types.INTEGER);
+    dbCallableStatementAdapter.setInt(2, 1);
+    dbCallableStatementAdapter.execute();
+    BigDecimal ret = dbCallableStatementAdapter.getBigDecimal(1);
+    return ret;
   }
 
   public ChildObj getChildByName(DbConnectionAdapter dbConnectionAdapter) throws SQLException, InvocationTargetException,
