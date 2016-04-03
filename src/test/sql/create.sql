@@ -105,6 +105,8 @@ IS
     RETURN NUMERIC;
   FUNCTION get_child_count_by_parent(p_parent_id NUMERIC)
     RETURN NUMERIC;
+  FUNCTION get_child_count_as_int(p_parent_id INTEGER)
+    RETURN INTEGER;
   FUNCTION get_child_by_name(p_child_name VARCHAR)
     RETURN JDBC_TEST.CHILD_OBJ;
   FUNCTION get_children_by_parent(p_parent JDBC_TEST.PARENT_OBJ)
@@ -257,6 +259,22 @@ IS
     RETURN NUMERIC IS
 
     v_ret NUMERIC;
+
+    BEGIN
+
+      SELECT count(1)
+      INTO v_ret
+      FROM JDBC_TEST.CHILD c
+      WHERE c.PARENT_ID = p_parent_id;
+
+      RETURN v_ret;
+
+    END;
+
+  FUNCTION get_child_count_as_int(p_parent_id INTEGER)
+    RETURN INTEGER IS
+
+    v_ret INTEGER;
 
     BEGIN
 
