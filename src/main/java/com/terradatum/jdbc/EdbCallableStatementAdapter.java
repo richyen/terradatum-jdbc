@@ -3,6 +3,8 @@ package com.terradatum.jdbc;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 
+import static java.sql.Types.REF;
+
 /**
  * @author rbellamy@terradatum.com
  * @date 1/30/16
@@ -167,7 +169,14 @@ class EdbCallableStatementAdapter extends JdbcCallableStatementAdapter implement
    */
   @Override
   public void registerOutParameter(int parameterIndex, int sqlType) throws SQLException {
-    delegate().registerOutParameter(parameterIndex, sqlType);
+    switch (sqlType) {
+      case Types.REF_CURSOR:
+        delegate().registerOutParameter(parameterIndex, REF);
+        break;
+      default:
+        delegate().registerOutParameter(parameterIndex, sqlType);
+        break;
+    }
   }
 
   private interface EdbSearchPathParameterRegistrar {
