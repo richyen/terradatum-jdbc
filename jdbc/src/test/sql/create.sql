@@ -86,6 +86,9 @@ CREATE OR REPLACE TYPE JDBC_TEST.PARENT_OBJ AS OBJECT
 CREATE OR REPLACE TYPE JDBC_TEST.PARENT_TBL AS TABLE OF JDBC_TEST.PARENT_OBJ;
 /
 
+CREATE OR REPLACE TYPE JDBC_TEST.NUMBER_TBL AS TABLE OF NUMERIC;
+/
+
 CREATE OR REPLACE PACKAGE JDBC_TEST.PARENT_CHILD_PKG
 IS
 
@@ -113,6 +116,8 @@ IS
     RETURN JDBC_TEST.CHILD_TBL;
   FUNCTION get_children_by_parent_id(p_parent_id NUMERIC)
     RETURN JDBC_TEST.CHILD_TBL;
+  FUNCTION table_to_string(p_tbl JDBC_TEST.NUMBER_TBL)
+    RETURN VARCHAR;
 
 END PARENT_CHILD_PKG;
 /
@@ -332,6 +337,27 @@ IS
 
     END;
 
+  FUNCTION table_to_string(p_tbl JDBC_TEST.NUMBER_TBL)
+    RETURN VARCHAR IS
+
+    v_ci     VARCHAR(100);
+    v_string VARCHAR(2000);
+    v_idx    NUMBER;
+
+    BEGIN
+
+      v_idx := p_tbl.FIRST;
+
+      WHILE (v_idx IS NOT NULL)
+      LOOP
+        v_ci := p_tbl(v_idx);
+        v_string := v_string || v_ci || ',';
+        v_idx := p_tbl.NEXT(v_idx);
+
+      END LOOP;
+      RETURN substr(v_string, 1, length(v_string) - 1);
+
+    END;
 
 END PARENT_CHILD_PKG;
 /
