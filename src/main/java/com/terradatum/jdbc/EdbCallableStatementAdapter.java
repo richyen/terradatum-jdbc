@@ -64,7 +64,6 @@ class EdbCallableStatementAdapter extends JdbcCallableStatementAdapter implement
       EdbCallableStatementAdapter.EdbSearchPathParameterRegistrar creator) throws SQLException {
     String searchPath = getConnectionAdapter().getSearchPath();
     String name = getConnectionAdapter().setSearchPathToSchema(typeName);
-    // noinspection unchecked
     creator.register(parameterIndex, sqlType, name.toLowerCase());
     getConnectionAdapter().setSearchPath(searchPath);
   }
