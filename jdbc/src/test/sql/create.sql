@@ -118,6 +118,8 @@ IS
     RETURN JDBC_TEST.CHILD_TBL;
   FUNCTION table_to_string(p_tbl JDBC_TEST.NUMBER_TBL)
     RETURN VARCHAR;
+  FUNCTION table_to_string_520967(p_tbl JDBC_TEST.NUMBER_TBL)
+    RETURN VARCHAR;
 
 END PARENT_CHILD_PKG;
 /
@@ -340,9 +342,30 @@ IS
   FUNCTION table_to_string(p_tbl JDBC_TEST.NUMBER_TBL)
     RETURN VARCHAR IS
 
+
+    v_ci     NUMBER;
+    v_string VARCHAR(2000);
+    CURSOR number_cur IS SELECT * FROM TABLE(p_tbl);
+
+    BEGIN
+
+      OPEN number_cur;
+      LOOP
+        FETCH number_cur INTO v_ci;
+        EXIT WHEN number_cur%NOTFOUND;
+        v_string := v_string || TO_CHAR(v_ci) || ',';
+
+      END LOOP;
+      RETURN substr(v_string, 1, length(v_string) - 1);
+
+    END;
+
+  FUNCTION table_to_string_520967(p_tbl JDBC_TEST.NUMBER_TBL)
+    RETURN VARCHAR IS
+
     v_ci     VARCHAR(100);
     v_string VARCHAR(2000);
-    v_idx    NUMBER;
+    v_idx    INTEGER;
 
     BEGIN
 

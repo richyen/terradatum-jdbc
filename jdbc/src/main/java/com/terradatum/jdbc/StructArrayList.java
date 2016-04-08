@@ -86,7 +86,7 @@ public abstract class StructArrayList<S extends DbStruct> extends JdbcArrayList<
 
 
   /**
-   * This method is plucked directly from the PostgreSQL JDBC code from the private, synchronized, {@link com.edb.jdbc4.AbstractJdbc4Array}
+   * This method is plucked directly from the PostgreSQL JDBC code from the private, synchronized, {@link com.edb.jdbc.PgArray}
    * {@code buildArrayList} method. The reason for this is that when returning Composite Structs with attributes that are {@link Array}'s
    * the PostgreSQL and EDB JDBC drivers fail to create those member attributes as even weakly referenced {@link Array}s. Instead
    * they are <b>{@link String}s</b>! In other words, you cannot do the following:

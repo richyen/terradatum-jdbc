@@ -125,4 +125,24 @@ public class FunctionCallWithObjectParameterTests extends AbstractDbTest {
     }
     return ret.intValue();
   }
+
+  public int getChildCountByParentUsingDirectJdbcWithOverload(Connection connection) throws SQLException {
+    String commandText = "{? = call parent_child_pkg.get_child_count_by_parent(?)}";
+    String typeName;
+    if (OracleConnection.class.isAssignableFrom(connection.getClass()) ||
+        connection.isWrapperFor(OracleConnection.class)) {
+      typeName = "JDBC_TEST.PARENT_OBJ";
+    } else {
+      typeName = "parent_obj";
+    }
+    Struct parent = connection.createStruct(typeName, new Object[]{
+        BigDecimal.ONE, "Caesar", null, null, null, null, null
+    });
+    CallableStatement callableStatement = connection.prepareCall(commandText);
+    callableStatement.registerOutParameter(1, Types.NUMERIC);
+    callableStatement.setObject(2, parent);
+    callableStatement.execute();
+    BigDecimal ret = callableStatement.getBigDecimal(1);
+    return ret.intValue();
+  }
 }
