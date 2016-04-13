@@ -30,32 +30,6 @@ public class DirectJdbcTests extends AbstractDbTest {
     return ret;
   }
 
-  public int getChildCountByParentUsingDirectJdbcPreparedStatement(Connection connection) throws SQLException {
-    String commandText;
-    String typeName;
-    if (OracleConnection.class.isAssignableFrom(connection.getClass()) ||
-        connection.isWrapperFor(OracleConnection.class)) {
-      commandText = "SELECT * FROM parent_child_pkg.get_child_count_by_parent_obj(?)";
-      typeName = "JDBC_TEST.PARENT_OBJ";
-    } else {
-      commandText = "SELECT parent_child_pkg.get_child_count_by_parent_obj(?)";
-      typeName = "parent_obj";
-    }
-    Struct parent = connection.createStruct(typeName, new Object[]{
-        BigDecimal.ONE, "Caesar", null, null, null, null, null
-    });
-    PreparedStatement preparedStatement = connection.prepareStatement(commandText);
-
-    preparedStatement.setObject(1, parent);
-    ResultSet resultSet = preparedStatement.executeQuery();
-    BigDecimal ret = BigDecimal.ZERO;
-    if (resultSet.next()) {
-      ret = resultSet.getBigDecimal(1);
-    }
-    return ret.intValue();
-  }
-
-
   public int getChildCountByParentUsingDirectJdbcWithOverload(Connection connection) throws SQLException {
     String commandText = "{? = call parent_child_pkg.get_child_count_by_parent(?)}";
     String typeName;
