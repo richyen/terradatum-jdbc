@@ -51,4 +51,16 @@ public class OracleDirectJdbcTests extends DirectJdbcTests {
     int childCountByParent = getChildCountByParentUsingDirectJdbcWithOverload(getOracleConnection());
     Assert.assertEquals("Caesar has the wrong number of children", 3, childCountByParent);
   }
+
+  @Test
+  public void canInsertNullIntegerInPreparedStatement() throws SQLException {
+    dbSetupTracker.skipNextLaunch();
+    insertNullIntegerInPreparedStatement(getOracleConnection());
+  }
+
+  @Test
+  public void canCreateObjectTypeAndBodyWithStatement() throws SQLException {
+    dbSetupTracker.skipNextLaunch();
+    createObjectTypeAndBodyWithStatement(getOracleConnection());
+  }
 }

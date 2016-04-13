@@ -23,8 +23,8 @@ public class EdbDirectJdbcTests extends DirectJdbcTests {
 
   @Before
   public void prepare() throws Exception {
-    assert ORACLE_DATA_SOURCE != null : "Datasource cannot be null";
-    DbSetup dbSetup = new DbSetup(new DataSourceDestination(ORACLE_DATA_SOURCE), super.setupDb());
+    assert EDB_DATA_SOURCE != null : "Datasource cannot be null";
+    DbSetup dbSetup = new DbSetup(new DataSourceDestination(EDB_DATA_SOURCE), super.setupDb());
     LOGGER.debug(dbSetupTracker.toString());
     dbSetupTracker.launchIfNecessary(dbSetup);
   }
@@ -51,4 +51,17 @@ public class EdbDirectJdbcTests extends DirectJdbcTests {
     int childCountByParent = getChildCountByParentUsingDirectJdbcWithOverload(getEdbConnection());
     Assert.assertEquals("Caesar has the wrong number of children", 3, childCountByParent);
   }
+
+  @Test
+  public void canInsertNullIntegerInPreparedStatement() throws SQLException {
+    dbSetupTracker.skipNextLaunch();
+    insertNullIntegerInPreparedStatement(getEdbConnection());
+  }
+
+  @Test
+  public void canCreateObjectTypeAndBodyWithStatement() throws SQLException {
+    dbSetupTracker.skipNextLaunch();
+    createObjectTypeAndBodyWithStatement(getEdbConnection());
+  }
+
 }
