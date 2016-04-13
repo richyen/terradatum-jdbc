@@ -5,11 +5,11 @@ import com.terradatum.jdbc.DbConnectionAdapter;
 import com.terradatum.jdbc.db.objects.jdbcTest.ChildObj;
 import com.terradatum.jdbc.db.objects.jdbcTest.ChildTbl;
 import com.terradatum.jdbc.db.objects.jdbcTest.ParentObj;
-import oracle.jdbc.driver.OracleConnection;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.SQLException;
+import java.sql.Types;
 
 /**
  * @author rbellamy@terradatum.com
@@ -77,23 +77,6 @@ public class FunctionCallTests extends AbstractDbTest {
     dbCallableStatementAdapter.setString(2, "Caesar");
     dbCallableStatementAdapter.execute();
     ParentObj ret = dbCallableStatementAdapter.getStruct(1, ParentObj.class);
-    return ret;
-  }
-
-  public Struct getParentStructByNameUsingDirectJdbc(Connection connection) throws SQLException {
-    String commandText = "{? = call parent_child_pkg.get_parent_by_name(?)}";
-    String typeName;
-    if (OracleConnection.class.isAssignableFrom(connection.getClass()) ||
-        connection.isWrapperFor(OracleConnection.class)) {
-      typeName = "JDBC_TEST.PARENT_OBJ";
-    } else {
-      typeName = "parent_obj";
-    }
-    CallableStatement callableStatement = connection.prepareCall(commandText);
-    callableStatement.registerOutParameter(1, Types.STRUCT, typeName);
-    callableStatement.setString(2, "Caesar");
-    callableStatement.execute();
-    Struct ret = (Struct) callableStatement.getObject(1);
     return ret;
   }
 }
