@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.sql.Array;
 import java.sql.SQLException;
 import java.sql.Struct;
 
@@ -82,14 +81,5 @@ public class EdbFunctionCallTests extends FunctionCallTests {
     dbSetupTracker.skipNextLaunch();
     ParentObj parentObj = getParentByName(getEdbConnectionAdapter(searchPath));
     Assert.assertNotNull(parentObj);
-  }
-
-  @Test
-  public void canGetParentByNameUsingDirectJdbc() throws SQLException {
-    dbSetupTracker.skipNextLaunch();
-    Struct parentStruct = getParentStructByNameUsingDirectJdbc(getEdbConnection());
-    Assert.assertNotNull(parentStruct);
-    Assert.assertTrue("The attribute is not an Struct", Struct.class.isAssignableFrom(parentStruct.getAttributes()[2].getClass()));
-    Assert.assertTrue("The attribute is not an Array", Array.class.isAssignableFrom(parentStruct.getAttributes()[6].getClass()));
   }
 }
