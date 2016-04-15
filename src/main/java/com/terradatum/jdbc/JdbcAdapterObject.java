@@ -16,8 +16,6 @@
 
 package com.terradatum.jdbc;
 
-import com.google.common.annotations.GwtCompatible;
-
 import java.io.Serializable;
 
 /**
@@ -42,7 +40,6 @@ import java.io.Serializable;
  * @author Mike Bostock
  * @author rbellamy@terradatum.com
  */
-@GwtCompatible
 public abstract class JdbcAdapterObject {
 
   /**
