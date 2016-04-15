@@ -3,11 +3,7 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.terradatum</groupId>
-    <artifactId>metrics-project</artifactId>
-    <version>4.9-SNAPSHOT</version>
-  </parent>
+  <groupId>com.terradatum</groupId>
   <artifactId>terradatum-jdbc-parent</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
@@ -22,26 +18,28 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <!-- dependency versions -->
+    <edb-jdbc.groupId>com.edb</edb-jdbc.groupId>
     <edb-jdbc.version>9.5.1.6-RC1</edb-jdbc.version>
+    <ojdbc.groupId>com.oracle</ojdbc.groupId>
     <ojdbc.version>11.2.0.3.0-1</ojdbc.version>
     <jetbrains-annotations.version>15.0</jetbrains-annotations.version>
     <guava.version>19.0</guava.version>
     <st4.version>4.0.8</st4.version>
+    <slf4j-api.version>1.7.13</slf4j-api.version>
+    <jcl-over-slf4j.version>1.5.6</jcl-over-slf4j.version>
     <junit.version>4.11</junit.version>
+    <hamcrest.version>1.3</hamcrest.version>
     <dbsetup.version>1.6.0</dbsetup.version>
     <commons-dbcp2.version>2.1.1</commons-dbcp2.version>
-
-    <!-- ORACLE -->
-    <oracle.class-name>${ojdbc.driver-class-name}</oracle.class-name>
-    <oracle.connection-url>${oracle-metrics-ds.connection-url}</oracle.connection-url>
-    <oracle.username>${oracle-metrics-ds.user-name}</oracle.username>
-    <oracle.password>${oracle-metrics-ds.password}</oracle.password>
-
-    <!-- EDB -->
-    <edb.class-name>${edb-jdbc.driver-class-name}</edb.class-name>
-    <edb.connection-url>${edb-metrics-ds.connection-url}</edb.connection-url>
-    <edb.username>${edb-metrics-ds.user-name}</edb.username>
-    <edb.password>${edb-metrics-ds.password}</edb.password>
+    <maven-compiler-plugin.version>3.3</maven-compiler-plugin.version>
+    <maven-resources-plugin.version>2.7</maven-resources-plugin.version>
+    <maven-dependency-plugin.version>2.10</maven-dependency-plugin.version>
+    <maven-source-plugin.version>2.4</maven-source-plugin.version>
+    <maven-jar-plugin.version>2.4</maven-jar-plugin.version>
+    <maven-help-plugin.version>2.2</maven-help-plugin.version>
+    <maven-surefire-plugin.version>2.19</maven-surefire-plugin.version>
+    <maven-plugin-plugin.version>3.4</maven-plugin-plugin.version>
+    <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
   </properties>
   <dependencyManagement>
     <dependencies>
@@ -72,11 +70,37 @@
         <artifactId>ST4</artifactId>
         <version>${st4.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j-api.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j-api.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${jcl-over-slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jul-to-slf4j</artifactId>
+        <version>${slf4j-api.version}</version>
+      </dependency>
       <!-- test -->
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest-all</artifactId>
+        <version>${hamcrest.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -104,4 +128,48 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>${maven-compiler-plugin.version}</version>
+          <configuration>
+            <source>1.8</source>
+            <target>1.8</target>
+          </configuration>
+        </plugin>
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>${maven-resources-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>${maven-dependency-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>${maven-jar-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-help-plugin</artifactId>
+          <version>${maven-help-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${maven-surefire-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-plugin-plugin</artifactId>
+          <version>${maven-plugin-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>properties-maven-plugin</artifactId>
+          <version>${properties-maven-plugin.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 </project>

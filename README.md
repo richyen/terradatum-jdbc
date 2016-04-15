@@ -541,7 +541,29 @@ Please see the [readme][22] in the sql scripts directory for a brief explanation
 *NOTE:* You will need to run `mvn -pl terradatum-jdbc process-test-resources` and then use the filtered SQL scripts located in the
 `target/generated-sql-scripts` directory. Again - follow the instructions and you should be good-to-go.
 
-Good Luck!!!!
+Additionally, you'll need to add a jdbc_test.properties in the `./jdbc` directory that has the following form in order for the property replacement to
+work properly:
+```properties
+
+#<!-- ORACLE -->
+oracle.class-name=oracle.jdbc.OracleDriver
+
+jdbc_test.oracle.host=<your oracle host>
+jdbc_test.oracle.port=1521
+# you need both the service name and the SID??? erm, yeah, I think so...
+jdbc_test.oracle.service_name=<your oracle service name>
+jdbc_test.oracle.sid=<your oracle SID>
+jdbc_test.oracle.password=<your sys password>
+
+#<!-- EDB -->
+edb.class-name=com.edb.Driver
+
+jdbc_test.edb.host=<your edb host>
+jdbc_test.edb.port=5444
+jdbc_test.edb.password=<your enterprisedb password>
+```
+
+*Good Luck!!!!*
 
 - G. Richard Bellamy and the Terradatum Team.
 
