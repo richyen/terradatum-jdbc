@@ -53,27 +53,6 @@
     <maven-plugin-plugin.version>3.4</maven-plugin-plugin.version>
     <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
   </properties>
-  <profiles>
-    <profile>
-      <id>
-        jdbc_test-properties
-      </id>
-      <activation>
-        <file>
-          <exists>jdbc_test.properties</exists>
-        </file>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>properties-maven-plugin</artifactId>
-            <version>${properties-maven-plugin.version}</version>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -196,6 +175,11 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-plugin-plugin</artifactId>
           <version>${maven-plugin-plugin.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>properties-maven-plugin</artifactId>
+          <version>${properties-maven-plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
