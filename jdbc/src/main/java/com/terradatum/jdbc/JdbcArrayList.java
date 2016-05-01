@@ -32,12 +32,6 @@ public abstract class JdbcArrayList<E> extends ForwardingList<E> implements DbAr
   }
 
   @Override
-  public JdbcArrayList<E> setArray(Object array) throws SQLException, NoSuchMethodException, NoSuchFieldException,
-      IllegalAccessException, InvocationTargetException {
-    return setArray((Array) array);
-  }
-
-  @Override
   public JdbcArrayList<E> setElements(E[] elements) throws SQLException {
     if (elements != null) {
       Collections.addAll(this, elements);
