@@ -34,8 +34,8 @@ setStructAttribute(attributeInfo, index) ::= <<
 setArrayAttribute(attributeInfo, index) ::= <<
 
 <if(attributeInfo.differentSchema)><attributeInfo.propertyName> = new <package>.<attributeInfo.schemaName>.<attributeInfo.className>();
-<attributeInfo.propertyName>.setArray((Array) attributes[<index>])<else><attributeInfo.propertyName> = new <attributeInfo.className>();
-<attributeInfo.propertyName>.setArray((Array) attributes[<index>])<endif>
+<attributeInfo.propertyName>.setArray(attributes[<index>])<else><attributeInfo.propertyName> = new <attributeInfo.className>();
+<attributeInfo.propertyName>.setArray(attributes[<index>])<endif>
 >>
 
 setAttribute(attributeInfo, index) ::= <<
