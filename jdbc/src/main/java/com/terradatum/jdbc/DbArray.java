@@ -14,6 +14,9 @@ public interface DbArray<E> extends Array, DbData {
 
   Object[] toArray();
 
+  DbArray<E> setArray(Object array) throws SQLException, NoSuchMethodException, NoSuchFieldException,
+      IllegalAccessException, InvocationTargetException;
+
   DbArray<E> setArray(Array array) throws SQLException, NoSuchMethodException, NoSuchFieldException,
       IllegalAccessException, InvocationTargetException;
 
